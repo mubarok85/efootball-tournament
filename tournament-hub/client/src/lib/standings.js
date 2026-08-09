@@ -8,6 +8,14 @@ function createRow(
     name:
       participant.name,
 
+    imageUrl:
+      participant.image_url ||
+      null,
+
+    imageUrls:
+      participant.imageUrls ||
+      [],
+
     played:
       0,
 
@@ -139,7 +147,9 @@ export function calculateStandings({
           home.points += 3
 
           away.lost += 1
-        } else if (
+        }
+
+        else if (
           awayScore >
           homeScore
         ) {
@@ -147,7 +157,9 @@ export function calculateStandings({
           away.points += 3
 
           home.lost += 1
-        } else {
+        }
+
+        else {
           home.drawn += 1
           away.drawn += 1
 
@@ -220,6 +232,7 @@ export function calculateStandings({
       index
     ) => ({
       ...row,
+
       position:
         index + 1
     })

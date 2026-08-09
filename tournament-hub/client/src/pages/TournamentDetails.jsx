@@ -11,6 +11,7 @@ import MatchResultEditor from '../components/MatchResultEditor'
 import StandingsSection from '../components/StandingsSection'
 import BracketSection from '../components/BracketSection'
 import PlayerAssignmentPanel from '../components/PlayerAssignmentPanel'
+import ParticipantAvatar from '../components/ParticipantAvatar'
 
 import './TournamentDetails.css'
 
@@ -1382,6 +1383,16 @@ function TournamentDetails({
                                   }
                                 </span>
 
+                                <ParticipantAvatar
+                                  name={
+                                    member.name
+                                  }
+                                  imageUrl={
+                                    member.image_url
+                                  }
+                                  size="sm"
+                                />
+
                                 <strong>
                                   {
                                     member.name
@@ -1469,6 +1480,16 @@ function TournamentDetails({
                                 index + 1
                               }
                             </span>
+
+                            <ParticipantAvatar
+                              name={
+                                player.name
+                              }
+                              imageUrl={
+                                player.image_url
+                              }
+                              size="sm"
+                            />
 
                             <strong>
                               {
@@ -1649,14 +1670,52 @@ function TournamentDetails({
 
                             <div className="fixture-matchup">
 
-                              <strong className="fixture-participant home">
-                                {
-                                  getParticipantName(
-                                    match,
-                                    1
-                                  )
-                                }
-                              </strong>
+                              <div className="fixture-participant home">
+
+                                <ParticipantAvatar
+                                  name={
+                                    getParticipantName(
+                                      match,
+                                      1
+                                    )
+                                  }
+                                  imageUrl={
+                                    tournament.participant_type === 'team'
+                                      ? null
+                                      : (
+                                          players.find(
+                                            (player) =>
+                                              player.id ===
+                                              match.player1_id
+                                          )?.image_url ||
+                                          null
+                                        )
+                                  }
+                                  imageUrls={
+                                    tournament.participant_type === 'team'
+                                      ? getTeamMembers(
+                                          match.team1_id
+                                        )
+                                          .map(
+                                            (player) =>
+                                              player.image_url
+                                          )
+                                          .filter(Boolean)
+                                      : []
+                                  }
+                                  size="sm"
+                                />
+
+                                <strong>
+                                  {
+                                    getParticipantName(
+                                      match,
+                                      1
+                                    )
+                                  }
+                                </strong>
+
+                              </div>
 
                               <div className="fixture-score">
                                 <span className="versus">
@@ -1664,14 +1723,52 @@ function TournamentDetails({
                                 </span>
                               </div>
 
-                              <strong className="fixture-participant away">
-                                {
-                                  getParticipantName(
-                                    match,
-                                    2
-                                  )
-                                }
-                              </strong>
+                              <div className="fixture-participant away">
+
+                                <ParticipantAvatar
+                                  name={
+                                    getParticipantName(
+                                      match,
+                                      2
+                                    )
+                                  }
+                                  imageUrl={
+                                    tournament.participant_type === 'team'
+                                      ? null
+                                      : (
+                                          players.find(
+                                            (player) =>
+                                              player.id ===
+                                              match.player2_id
+                                          )?.image_url ||
+                                          null
+                                        )
+                                  }
+                                  imageUrls={
+                                    tournament.participant_type === 'team'
+                                      ? getTeamMembers(
+                                          match.team2_id
+                                        )
+                                          .map(
+                                            (player) =>
+                                              player.image_url
+                                          )
+                                          .filter(Boolean)
+                                      : []
+                                  }
+                                  size="sm"
+                                />
+
+                                <strong>
+                                  {
+                                    getParticipantName(
+                                      match,
+                                      2
+                                    )
+                                  }
+                                </strong>
+
+                              </div>
 
                             </div>
 

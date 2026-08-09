@@ -1,0 +1,96 @@
+.participant-avatar-root {
+  position: relative;
+
+  flex: 0 0 auto;
+
+  overflow: hidden;
+
+  display: inline-grid;
+  place-items: center;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 50%;
+
+  background: #f9dcd1;
+
+  color: #fc631d;
+
+  font-weight: 800;
+}
+
+
+.participant-avatar-sm {
+  width: 30px;
+  height: 30px;
+
+  font-size: 11px;
+}
+
+
+.participant-avatar-md {
+  width: 38px;
+  height: 38px;
+
+  font-size: 13px;
+}
+
+
+.participant-avatar-lg {
+  width: 58px;
+  height: 58px;
+
+  font-size: 18px;
+}
+
+
+.participant-avatar-image,
+.participant-avatar-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+
+.participant-avatar-image {
+  object-fit: cover;
+}
+
+
+.participant-avatar-fallback {
+  display: grid;
+  place-items: center;
+}
+
+
+.participant-avatar-stack {
+  overflow: visible;
+
+  border: 0;
+
+  background: transparent;
+}
+
+
+.participant-avatar-stack
+.participant-avatar-image {
+  position: absolute;
+
+  width: 72%;
+  height: 72%;
+
+  border: 2px solid white;
+  border-radius: 50%;
+
+  background: #f9dcd1;
+}
+
+
+.participant-avatar-stack-first {
+  top: 0;
+  left: 0;
+}
+
+
+.participant-avatar-stack-second {
+  right: 0;
+  bottom: 0;
+}

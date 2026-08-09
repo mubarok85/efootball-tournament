@@ -6,6 +6,8 @@ import {
   calculateStandings
 } from '../lib/standings'
 
+import ParticipantAvatar from './ParticipantAvatar'
+
 import './StandingsSection.css'
 
 
@@ -51,27 +53,66 @@ function StandingsSection({
     )
 
 
+  const teamParticipants =
+    useMemo(
+      () =>
+        teams.map(
+          (team) => ({
+            ...team,
+
+            imageUrls:
+              players
+                .filter(
+                  (player) =>
+                    player.team_id ===
+                      team.id
+                    &&
+                    player.image_url
+                )
+                .sort(
+                  (a, b) =>
+                    (
+                      a.team_position ||
+                      0
+                    )
+                    -
+                    (
+                      b.team_position ||
+                      0
+                    )
+                )
+                .map(
+                  (player) =>
+                    player.image_url
+                )
+          })
+        ),
+      [
+        teams,
+        players
+      ]
+    )
+
+
+  const allParticipants =
+    participantType ===
+    'team'
+      ? teamParticipants
+      : individualParticipants
+
+
   const participantMap =
     useMemo(
       () =>
         new Map(
-          (
-            participantType ===
-            'team'
-              ? teams
-              : individualParticipants
-          ).map(
+          allParticipants.map(
             (participant) => [
               participant.id,
               participant
             ]
           )
         ),
-      [
-        participantType,
-        teams,
-        individualParticipants
-      ]
+      [allParticipants]
     )
 
 
@@ -87,10 +128,7 @@ function StandingsSection({
 
         return calculateStandings({
           participants:
-            participantType ===
-            'team'
-              ? teams
-              : individualParticipants,
+            allParticipants,
 
           matches:
             matches.filter(
@@ -104,10 +142,9 @@ function StandingsSection({
       },
       [
         isLeagueFormat,
-        participantType,
-        teams,
-        individualParticipants,
-        matches
+        allParticipants,
+        matches,
+        participantType
       ]
     )
 
@@ -145,7 +182,8 @@ function StandingsSection({
                     return (
                       participantMap.get(
                         id
-                      ) || null
+                      ) ||
+                      null
                     )
                   }
                 )
@@ -169,8 +207,10 @@ function StandingsSection({
               standings:
                 calculateStandings({
                   participants,
+
                   matches:
                     groupMatches,
+
                   participantType
                 })
             }
@@ -196,19 +236,20 @@ function StandingsSection({
       <section className="standings-section">
 
         <div className="standings-heading">
-          <div>
-            <p className="eyebrow">
-              STANDINGS
-            </p>
 
-            <h2>
-              Tournament Standings
-            </h2>
-          </div>
+          <p className="eyebrow">
+            STANDINGS
+          </p>
+
+          <h2>
+            Tournament Standings
+          </h2>
+
         </div>
 
+
         <div className="standings-empty">
-          Knockout tournaments use the elimination bracket instead of a league table.
+          Knockout tournaments use the live bracket instead of a league table.
         </div>
 
       </section>
@@ -220,6 +261,7 @@ function StandingsSection({
     <section className="standings-section">
 
       <div className="standings-heading">
+
         <div>
           <p className="eyebrow">
             STANDINGS
@@ -234,9 +276,10 @@ function StandingsSection({
           </h2>
 
           <p>
-            Standings update automatically whenever a match result is saved.
+            Standings update automatically whenever match results are saved.
           </p>
         </div>
+
       </div>
 
 
@@ -359,11 +402,30 @@ function StandingsTable({
                   </span>
                 </td>
 
+
                 <td>
-                  <strong>
-                    {row.name}
-                  </strong>
+                  <div className="standing-participant">
+
+                    <ParticipantAvatar
+                      name={
+                        row.name
+                      }
+                      imageUrl={
+                        row.imageUrl
+                      }
+                      imageUrls={
+                        row.imageUrls
+                      }
+                      size="sm"
+                    />
+
+                    <strong>
+                      {row.name}
+                    </strong>
+
+                  </div>
                 </td>
+
 
                 <td>
                   {row.played}

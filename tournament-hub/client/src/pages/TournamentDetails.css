@@ -854,3 +854,57 @@
   }
 
 }
+
+
+/* =====================================================
+   PARTICIPANT IDENTITY.
+   ===================================================== */
+
+.player-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.team-member {
+  display: grid;
+
+  grid-template-columns:
+    22px
+    30px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+.fixture-participant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  min-width: 0;
+}
+
+
+.fixture-participant.home {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+
+.fixture-participant.away {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+
+.fixture-participant strong {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

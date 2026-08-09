@@ -16,6 +16,8 @@ import {
   apiRequest
 } from '../lib/api'
 
+import ParticipantAvatar from './ParticipantAvatar'
+
 import './BracketSection.css'
 
 
@@ -129,6 +131,61 @@ function BracketSection({
     return slot === 1
       ? match.player1_id
       : match.player2_id
+  }
+
+
+  function participantImages(
+    id
+  ) {
+    if (!id) {
+      return []
+    }
+
+
+    if (
+      participantType ===
+      'team'
+    ) {
+      return players
+        .filter(
+          (player) =>
+            player.team_id ===
+              id
+            &&
+            player.image_url
+        )
+        .sort(
+          (a, b) =>
+            (
+              a.team_position ||
+              0
+            )
+            -
+            (
+              b.team_position ||
+              0
+            )
+        )
+        .map(
+          (player) =>
+            player.image_url
+        )
+        .slice(0, 2)
+    }
+
+
+    const player =
+      players.find(
+        (item) =>
+          item.id === id
+      )
+
+
+    return player?.image_url
+      ? [
+          player.image_url
+        ]
+      : []
   }
 
 
@@ -628,6 +685,9 @@ function BracketSection({
                     participantName={
                       participantName
                     }
+                    participantImages={
+                      participantImages
+                    }
                     getParticipantId={
                       getParticipantId
                     }
@@ -651,6 +711,22 @@ function BracketSection({
                 <div className="champion-trophy">
                   🏆
                 </div>
+
+                {championId && (
+                  <ParticipantAvatar
+                    name={
+                      participantName(
+                        championId
+                      )
+                    }
+                    imageUrls={
+                      participantImages(
+                        championId
+                      )
+                    }
+                    size="lg"
+                  />
+                )}
 
                 <strong>
                   {
@@ -685,6 +761,9 @@ function BracketSection({
                     }
                     participantName={
                       participantName
+                    }
+                    participantImages={
+                      participantImages
                     }
                     getParticipantId={
                       getParticipantId
@@ -721,6 +800,9 @@ function BracketSection({
                     }
                     participantName={
                       participantName
+                    }
+                    participantImages={
+                      participantImages
                     }
                     getParticipantId={
                       getParticipantId
@@ -769,6 +851,9 @@ function BracketSection({
                       participantName={
                         participantName
                       }
+                      participantImages={
+                        participantImages
+                      }
                       getParticipantId={
                         getParticipantId
                       }
@@ -800,6 +885,7 @@ function BracketRound({
   side,
   ties,
   participantName,
+  participantImages,
   getParticipantId,
   aggregateScores,
   winnerId
@@ -829,6 +915,9 @@ function BracketRound({
               participantName={
                 participantName
               }
+              participantImages={
+                participantImages
+              }
               getParticipantId={
                 getParticipantId
               }
@@ -852,6 +941,7 @@ function BracketRound({
 function BracketTie({
   tie,
   participantName,
+  participantImages,
   getParticipantId,
   aggregateScores,
   winnerId
@@ -937,6 +1027,11 @@ function BracketTie({
             firstId
           )
         }
+        images={
+          participantImages(
+            firstId
+          )
+        }
         score={
           completed &&
           firstId
@@ -973,6 +1068,11 @@ function BracketTie({
         }
         name={
           participantName(
+            secondId
+          )
+        }
+        images={
+          participantImages(
             secondId
           )
         }
@@ -1015,6 +1115,7 @@ function BracketSlot({
   slot,
   participantId,
   name,
+  images = [],
   score,
   winner,
   locked,
@@ -1113,6 +1214,18 @@ function BracketSlot({
             : '⋮⋮'
         }
       </span>
+
+      {
+        participantId ? (
+          <ParticipantAvatar
+            name={name}
+            imageUrls={images}
+            size="sm"
+          />
+        ) : (
+          <span className="bracket-avatar-spacer" />
+        )
+      }
 
       <span className="slot-player">
         {name}

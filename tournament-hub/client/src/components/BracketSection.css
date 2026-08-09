@@ -495,3 +495,31 @@
     flex-direction: column;
   }
 }
+
+
+/* =====================================================
+   BRACKET PLAYER IMAGES.
+   ===================================================== */
+
+.bracket-slot {
+  grid-template-columns:
+    18px
+    30px
+    minmax(0, 1fr)
+    27px;
+}
+
+
+.bracket-avatar-spacer {
+  width: 30px;
+  height: 30px;
+
+  display: block;
+}
+
+
+.champion-area
+.participant-avatar-root {
+  margin:
+    5px 0 9px;
+}

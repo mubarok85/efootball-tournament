@@ -108,3 +108,20 @@
   color: var(--text-secondary);
   text-align: center;
 }
+
+
+.standing-participant {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-width: 160px;
+}
+
+
+.standing-participant strong {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
