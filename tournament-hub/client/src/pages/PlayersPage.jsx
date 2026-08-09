@@ -8,6 +8,8 @@ import {
   supabase
 } from '../lib/supabase'
 
+import EditPlayerModal from '../components/EditPlayerModal'
+
 import './PlayersPage.css'
 
 
@@ -18,6 +20,11 @@ function PlayersPage({
     players,
     setPlayers
   ] = useState([])
+
+  const [
+    editingPlayer,
+    setEditingPlayer
+  ] = useState(null)
 
   const [
     name,
@@ -595,17 +602,33 @@ function PlayersPage({
                     </div>
 
 
-                    <button
-                      type="button"
-                      className="delete-global-player"
-                      onClick={() =>
-                        deletePlayer(
-                          player
-                        )
-                      }
-                    >
-                      Delete
-                    </button>
+                    <div className="global-player-actions">
+
+                      <button
+                        type="button"
+                        className="edit-global-player"
+                        onClick={() =>
+                          setEditingPlayer(
+                            player
+                          )
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="delete-global-player"
+                        onClick={() =>
+                          deletePlayer(
+                            player
+                          )
+                        }
+                      >
+                        Delete
+                      </button>
+
+                    </div>
 
                   </article>
                 )
@@ -617,6 +640,22 @@ function PlayersPage({
         </section>
 
       </div>
+
+
+      {editingPlayer && (
+        <EditPlayerModal
+          player={editingPlayer}
+          user={user}
+          onClose={() =>
+            setEditingPlayer(
+              null
+            )
+          }
+          onUpdated={
+            loadPlayers
+          }
+        />
+      )}
 
     </main>
   )

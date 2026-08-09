@@ -387,3 +387,48 @@
       1 / -1;
   }
 }
+
+
+/* =====================================================
+   PLAYER PROFILE ACTIONS.
+   ===================================================== */
+
+.global-player-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+.edit-global-player,
+.delete-global-player {
+  padding: 6px 8px;
+
+  border: 0;
+  border-radius: 6px;
+
+  background: transparent;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+.edit-global-player {
+  color: #fc631d;
+}
+
+
+.edit-global-player:hover {
+  background: #f9dcd1;
+}
+
+
+.delete-global-player {
+  color: #e45712;
+}
+
+
+.delete-global-player:hover {
+  background: #fff1ec;
+}
