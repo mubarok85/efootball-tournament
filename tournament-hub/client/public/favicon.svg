@@ -1,0 +1,46 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+>
+  <rect
+    width="64"
+    height="64"
+    rx="16"
+    fill="#FC631D"
+  />
+
+  <path
+    d="M20 16h24v7c0 8-4.8 14.8-12 17.2C24.8 37.8 20 31 20 23v-7Z"
+    fill="white"
+  />
+
+  <path
+    d="M20 20h-6v5c0 5.5 3.7 10 9 11"
+    fill="none"
+    stroke="white"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M44 20h6v5c0 5.5-3.7 10-9 11"
+    fill="none"
+    stroke="white"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M32 40v7"
+    stroke="white"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+
+  <path
+    d="M23 51h18"
+    stroke="white"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+</svg>
