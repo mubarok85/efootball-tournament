@@ -41,6 +41,37 @@ function MatchResultEditor({
   )
 
   const [
+    homePenalty,
+    setHomePenalty
+  ] = useState(
+    match
+      .player1_penalty_score ??
+    ''
+  )
+
+  const [
+    awayPenalty,
+    setAwayPenalty
+  ] = useState(
+    match
+      .player2_penalty_score ??
+    ''
+  )
+
+  const [
+    showPenalties,
+    setShowPenalties
+  ] = useState(
+    match
+      .player1_penalty_score !==
+      null
+    ||
+    match
+      .player2_penalty_score !==
+      null
+  )
+
+  const [
     saving,
     setSaving
   ] = useState(false)
@@ -63,54 +94,34 @@ function MatchResultEditor({
         ''
       )
 
+      setHomePenalty(
+        match
+          .player1_penalty_score ??
+        ''
+      )
+
+      setAwayPenalty(
+        match
+          .player2_penalty_score ??
+        ''
+      )
+
       setEditing(
         match.status !==
         'completed'
       )
     },
-    [
-      match.player1_score,
-      match.player2_score,
-      match.status
-    ]
+    [match]
   )
 
 
   async function saveResult() {
-    const firstScore =
-      Number(homeScore)
-
-    const secondScore =
-      Number(awayScore)
-
-
     if (
-      homeScore === ''
-      ||
+      homeScore === '' ||
       awayScore === ''
     ) {
       setError(
         'Enter both scores.'
-      )
-      return
-    }
-
-
-    if (
-      !Number.isInteger(
-        firstScore
-      )
-      ||
-      !Number.isInteger(
-        secondScore
-      )
-      ||
-      firstScore < 0
-      ||
-      secondScore < 0
-    ) {
-      setError(
-        'Scores must be whole numbers.'
       )
       return
     }
@@ -130,10 +141,28 @@ function MatchResultEditor({
           body:
             JSON.stringify({
               player1_score:
-                firstScore,
+                Number(
+                  homeScore
+                ),
 
               player2_score:
-                secondScore
+                Number(
+                  awayScore
+                ),
+
+              player1_penalty_score:
+                homePenalty === ''
+                  ? null
+                  : Number(
+                      homePenalty
+                    ),
+
+              player2_penalty_score:
+                awayPenalty === ''
+                  ? null
+                  : Number(
+                      awayPenalty
+                    )
             })
         }
       )
@@ -146,9 +175,26 @@ function MatchResultEditor({
         await onSaved()
       }
     } catch (saveError) {
-      setError(
+      const message =
         saveError.message ||
         'Unable to save result.'
+
+
+      if (
+        message
+          .toLowerCase()
+          .includes(
+            'penalty'
+          )
+      ) {
+        setShowPenalties(
+          true
+        )
+      }
+
+
+      setError(
+        message
       )
     } finally {
       setSaving(false)
@@ -169,7 +215,8 @@ function MatchResultEditor({
           <div className="result-score">
             <strong>
               {
-                match.player1_score
+                match
+                  .player1_score
               }
             </strong>
 
@@ -179,7 +226,8 @@ function MatchResultEditor({
 
             <strong>
               {
-                match.player2_score
+                match
+                  .player2_score
               }
             </strong>
           </div>
@@ -189,6 +237,32 @@ function MatchResultEditor({
           </span>
 
         </div>
+
+
+        {
+          match
+            .player1_penalty_score !==
+            null
+          &&
+          match
+            .player2_penalty_score !==
+            null
+          && (
+            <div className="penalty-result">
+              Penalties:
+              {' '}
+              {
+                match
+                  .player1_penalty_score
+              }
+              {' - '}
+              {
+                match
+                  .player2_penalty_score
+              }
+            </div>
+          )
+        }
 
 
         <button
@@ -218,11 +292,16 @@ function MatchResultEditor({
         <input
           type="number"
           min="0"
-          value={homeScore}
-          onChange={(event) =>
-            setHomeScore(
-              event.target.value
-            )
+          value={
+            homeScore
+          }
+          onChange={
+            (event) =>
+              setHomeScore(
+                event
+                  .target
+                  .value
+              )
           }
         />
 
@@ -233,11 +312,16 @@ function MatchResultEditor({
         <input
           type="number"
           min="0"
-          value={awayScore}
-          onChange={(event) =>
-            setAwayScore(
-              event.target.value
-            )
+          value={
+            awayScore
+          }
+          onChange={
+            (event) =>
+              setAwayScore(
+                event
+                  .target
+                  .value
+              )
           }
         />
 
@@ -248,6 +332,55 @@ function MatchResultEditor({
       </div>
 
 
+      {showPenalties && (
+        <div className="penalty-editor">
+
+          <span>
+            Penalty Shootout.
+          </span>
+
+          <input
+            type="number"
+            min="0"
+            placeholder="Home"
+            value={
+              homePenalty
+            }
+            onChange={
+              (event) =>
+                setHomePenalty(
+                  event
+                    .target
+                    .value
+                )
+            }
+          />
+
+          <span>
+            -
+          </span>
+
+          <input
+            type="number"
+            min="0"
+            placeholder="Away"
+            value={
+              awayPenalty
+            }
+            onChange={
+              (event) =>
+                setAwayPenalty(
+                  event
+                    .target
+                    .value
+                )
+            }
+          />
+
+        </div>
+      )}
+
+
       {error && (
         <div className="result-error">
           {error}
@@ -256,6 +389,23 @@ function MatchResultEditor({
 
 
       <div className="result-actions">
+
+        <button
+          type="button"
+          className="result-cancel"
+          onClick={() =>
+            setShowPenalties(
+              !showPenalties
+            )
+          }
+        >
+          {
+            showPenalties
+              ? 'Hide Penalties'
+              : 'Add Penalties'
+          }
+        </button>
+
 
         {match.status ===
           'completed' && (
@@ -275,7 +425,9 @@ function MatchResultEditor({
           type="button"
           className="result-save"
           disabled={saving}
-          onClick={saveResult}
+          onClick={
+            saveResult
+          }
         >
           {
             saving

@@ -1,12 +1,22 @@
-import { Router } from 'express'
+import {
+  randomUUID
+} from 'node:crypto'
+
+import {
+  Router
+} from 'express'
 
 import {
   distributeGroups,
-  generateKnockoutRound,
   generateRoundRobin,
   getGroupName,
   isPowerOfTwo
 } from '../utils/fixtures.js'
+
+import {
+  generateKnockoutBracket
+} from '../utils/knockout.js'
+
 
 const router = Router()
 
@@ -17,20 +27,28 @@ function participantFields(
   away
 ) {
   if (
-    participantType === 'team'
+    participantType ===
+    'team'
   ) {
     return {
       player1_id: null,
       player2_id: null,
 
-      team1_id: home.id,
-      team2_id: away.id
+      team1_id:
+        home.id,
+
+      team2_id:
+        away.id
     }
   }
 
+
   return {
-    player1_id: home.id,
-    player2_id: away.id,
+    player1_id:
+      home.id,
+
+    player2_id:
+      away.id,
 
     team1_id: null,
     team2_id: null
@@ -50,7 +68,9 @@ async function loadParticipants(
       data,
       error
     } = await supabase
-      .from('tournament_teams')
+      .from(
+        'tournament_teams'
+      )
       .select(
         'id, name, created_at'
       )
@@ -72,11 +92,14 @@ async function loadParticipants(
     return data || []
   }
 
+
   const {
     data,
     error
   } = await supabase
-    .from('tournament_players')
+    .from(
+      'tournament_players'
+    )
     .select(
       'id, name, created_at'
     )
@@ -95,9 +118,11 @@ async function loadParticipants(
       }
     )
 
+
   if (error) {
     throw error
   }
+
 
   return data || []
 }
@@ -105,16 +130,22 @@ async function loadParticipants(
 
 router.post(
   '/:id/generate-fixtures',
-  async (req, res, next) => {
+  async (
+    req,
+    res,
+    next
+  ) => {
     try {
       const {
         supabase,
         user
       } = req
 
+
       const {
         data: tournament,
-        error: tournamentError
+        error:
+          tournamentError
       } = await supabase
         .from('tournaments')
         .select('*')
@@ -128,6 +159,7 @@ router.post(
         )
         .single()
 
+
       if (
         tournamentError ||
         !tournament
@@ -140,9 +172,12 @@ router.post(
           })
       }
 
+
       const {
-        count: existingMatchCount,
-        error: matchCountError
+        count:
+          existingMatchCount,
+        error:
+          matchCountError
       } = await supabase
         .from('matches')
         .select(
@@ -157,9 +192,11 @@ router.post(
           tournament.id
         )
 
+
       if (matchCountError) {
         throw matchCountError
       }
+
 
       if (
         existingMatchCount > 0
@@ -172,11 +209,13 @@ router.post(
           })
       }
 
+
       const participants =
         await loadParticipants(
           supabase,
           tournament
         )
+
 
       if (
         participants.length < 2
@@ -189,9 +228,11 @@ router.post(
           })
       }
 
-      const matchRows = []
 
-      let groupCount = 0
+      const matchRows = []
+      const groupRows = []
+      const memberRows = []
+
 
       const addMatch = ({
         home,
@@ -246,6 +287,7 @@ router.post(
             tournament.double_round_robin
           )
 
+
         fixtures.forEach(
           (
             fixture,
@@ -253,8 +295,10 @@ router.post(
           ) => {
             addMatch({
               ...fixture,
+
               stage:
                 'league',
+
               matchOrder:
                 index + 1
             })
@@ -263,12 +307,12 @@ router.post(
       }
 
 
-      if (
+      else if (
         tournament.format ===
-        'league_final'
+          'league_final'
         ||
         tournament.format ===
-        'league_knockout'
+          'league_knockout'
       ) {
         if (
           tournament.format ===
@@ -278,6 +322,7 @@ router.post(
             Number(
               tournament.qualifiers_count
             )
+
 
           if (
             !isPowerOfTwo(
@@ -296,11 +341,13 @@ router.post(
           }
         }
 
+
         const fixtures =
           generateRoundRobin(
             participants,
             tournament.double_round_robin
           )
+
 
         fixtures.forEach(
           (
@@ -309,8 +356,10 @@ router.post(
           ) => {
             addMatch({
               ...fixture,
+
               stage:
                 'league',
+
               matchOrder:
                 index + 1
             })
@@ -319,59 +368,95 @@ router.post(
       }
 
 
-      if (
+      else if (
         tournament.format ===
         'knockout'
       ) {
-        const fixtures =
-          generateKnockoutRound(
-            participants,
-            tournament.two_legged_knockout
-          )
-
-        fixtures.forEach(
-          (fixture) => {
-            addMatch(
-              fixture
-            )
-          }
-        )
-      }
-
-
-      if (
-        tournament.format ===
-        'multi_group_league'
-        ||
-        tournament.format ===
-        'multi_group_tournament'
-      ) {
-        const requestedGroups =
-          Number(
-            tournament.number_of_groups
-          )
-
         if (
-          !requestedGroups
-          ||
-          requestedGroups < 2
-          ||
-          requestedGroups >
+          !isPowerOfTwo(
             participants.length
+          )
+          ||
+          participants.length >
+            32
         ) {
           return res
             .status(400)
             .json({
               message:
-                'Invalid number of groups.'
+                'Knockout tournaments require 2, 4, 8, 16, or 32 participants.'
             })
         }
 
-        const distributed =
+
+        matchRows.push(
+          ...generateKnockoutBracket({
+            tournamentId:
+              tournament.id,
+
+            participants,
+
+            participantType:
+              tournament
+                .participant_type,
+
+            twoLegged:
+              tournament
+                .two_legged_knockout
+          })
+        )
+      }
+
+
+      else if (
+        tournament.format ===
+          'multi_group_league'
+        ||
+        tournament.format ===
+          'multi_group_tournament'
+      ) {
+        const groupCount =
+          Number(
+            tournament
+              .number_of_groups
+          )
+
+
+        if (
+          !Number.isInteger(
+            groupCount
+          )
+          ||
+          groupCount < 2
+        ) {
+          return res
+            .status(400)
+            .json({
+              message:
+                'A valid number of groups is required.'
+            })
+        }
+
+
+        if (
+          participants.length <
+          groupCount * 2
+        ) {
+          return res
+            .status(400)
+            .json({
+              message:
+                'Each group must contain at least two participants.'
+            })
+        }
+
+
+        const grouped =
           distributeGroups(
             participants,
-            requestedGroups
+            groupCount
           )
+
 
         if (
           tournament.format ===
@@ -379,34 +464,31 @@ router.post(
         ) {
           const qualifiersPerGroup =
             Number(
-              tournament.qualifiers_per_group
+              tournament
+                .qualifiers_per_group
             )
 
-          const smallestGroup =
-            Math.min(
-              ...distributed.map(
-                (group) =>
-                  group.length
-              )
-            )
-
-          const totalQualifiers =
-            qualifiersPerGroup *
-            requestedGroups
 
           if (
-            qualifiersPerGroup < 1
+            !Number.isInteger(
+              qualifiersPerGroup
+            )
             ||
-            qualifiersPerGroup >
-              smallestGroup
+            qualifiersPerGroup < 1
           ) {
             return res
               .status(400)
               .json({
                 message:
-                  'Qualifiers per group cannot exceed the smallest group size.'
+                  'Qualifiers per group must be at least one.'
               })
           }
+
+
+          const totalQualifiers =
+            groupCount *
+            qualifiersPerGroup
+
 
           if (
             !isPowerOfTwo(
@@ -419,59 +501,55 @@ router.post(
               .status(400)
               .json({
                 message:
-                  'Total knockout qualifiers must equal 2, 4, 8, 16, or 32.'
+                  'The total number of knockout qualifiers must be 2, 4, 8, 16, or 32.'
+              })
+          }
+
+
+          if (
+            grouped.some(
+              (group) =>
+                qualifiersPerGroup >
+                group.length
+            )
+          ) {
+            return res
+              .status(400)
+              .json({
+                message:
+                  'Qualifiers per group cannot exceed the participants in a group.'
               })
           }
         }
 
-        const groupRows =
-          distributed.map(
-            (
-              group,
-              index
-            ) => ({
+
+        grouped.forEach(
+          (
+            groupParticipants,
+            groupIndex
+          ) => {
+            const groupId =
+              randomUUID()
+
+
+            groupRows.push({
+              id:
+                groupId,
+
               tournament_id:
                 tournament.id,
 
               name:
                 getGroupName(
-                  index
+                  groupIndex
                 ),
 
               group_order:
-                index + 1
+                groupIndex + 1
             })
-          )
 
-        const {
-          data: createdGroups,
-          error: groupError
-        } = await supabase
-          .from(
-            'tournament_groups'
-          )
-          .insert(
-            groupRows
-          )
-          .select()
 
-        if (groupError) {
-          throw groupError
-        }
-
-        groupCount =
-          createdGroups.length
-
-        const memberRows = []
-
-        createdGroups.forEach(
-          (
-            group,
-            groupIndex
-          ) => {
-            distributed[
-              groupIndex
-            ].forEach(
+            groupParticipants.forEach(
               (
                 participant,
                 participantIndex
@@ -481,55 +559,36 @@ router.post(
                     tournament.id,
 
                   group_id:
-                    group.id,
+                    groupId,
 
                   player_id:
-                    tournament.participant_type ===
+                    tournament
+                      .participant_type ===
                     'individual'
                       ? participant.id
                       : null,
 
                   team_id:
-                    tournament.participant_type ===
+                    tournament
+                      .participant_type ===
                     'team'
                       ? participant.id
                       : null,
 
                   seed_order:
-                    participantIndex +
-                    1
+                    participantIndex + 1
                 })
               }
             )
-          }
-        )
 
-        const {
-          error: memberError
-        } = await supabase
-          .from(
-            'tournament_group_members'
-          )
-          .insert(
-            memberRows
-          )
 
-        if (memberError) {
-          throw memberError
-        }
-
-        createdGroups.forEach(
-          (
-            group,
-            groupIndex
-          ) => {
             const fixtures =
               generateRoundRobin(
-                distributed[
-                  groupIndex
-                ],
-                tournament.double_round_robin
+                groupParticipants,
+                tournament
+                  .double_round_robin
               )
+
 
             fixtures.forEach(
               (
@@ -542,8 +601,7 @@ router.post(
                   stage:
                     'group',
 
-                  groupId:
-                    group.id,
+                  groupId,
 
                   matchOrder:
                     index + 1
@@ -555,33 +613,74 @@ router.post(
       }
 
 
-      if (
-        matchRows.length === 0
-      ) {
+      else {
         return res
           .status(400)
           .json({
             message:
-              'No fixtures were generated.'
+              'Unsupported tournament format.'
           })
       }
 
 
-      const {
-        data: createdMatches,
-        error: matchError
-      } = await supabase
-        .from('matches')
-        .insert(matchRows)
-        .select()
+      if (
+        groupRows.length > 0
+      ) {
+        const {
+          error
+        } = await supabase
+          .from(
+            'tournament_groups'
+          )
+          .insert(
+            groupRows
+          )
 
-      if (matchError) {
-        throw matchError
+        if (error) {
+          throw error
+        }
+      }
+
+
+      if (
+        memberRows.length > 0
+      ) {
+        const {
+          error
+        } = await supabase
+          .from(
+            'tournament_group_members'
+          )
+          .insert(
+            memberRows
+          )
+
+        if (error) {
+          throw error
+        }
+      }
+
+
+      if (
+        matchRows.length > 0
+      ) {
+        const {
+          error
+        } = await supabase
+          .from('matches')
+          .insert(
+            matchRows
+          )
+
+        if (error) {
+          throw error
+        }
       }
 
 
       const {
-        error: statusError
+        error:
+          tournamentUpdateError
       } = await supabase
         .from('tournaments')
         .update({
@@ -593,8 +692,11 @@ router.post(
           tournament.id
         )
 
-      if (statusError) {
-        throw statusError
+
+      if (
+        tournamentUpdateError
+      ) {
+        throw tournamentUpdateError
       }
 
 
@@ -602,17 +704,11 @@ router.post(
         message:
           'Fixtures generated successfully.',
 
-        format:
-          tournament.format,
-
-        participants:
-          participants.length,
+        matches:
+          matchRows.length,
 
         groups:
-          groupCount,
-
-        matches:
-          createdMatches.length
+          groupRows.length
       })
     } catch (error) {
       next(error)

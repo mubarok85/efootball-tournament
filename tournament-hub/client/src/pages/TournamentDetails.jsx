@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase'
 import { apiRequest } from '../lib/api'
 import MatchResultEditor from '../components/MatchResultEditor'
 import StandingsSection from '../components/StandingsSection'
+import BracketSection from '../components/BracketSection'
 
 import './TournamentDetails.css'
 
@@ -18,6 +19,11 @@ function TournamentDetails({
   tournamentId,
   onBack
 }) {
+  const [
+    activePage,
+    setActivePage
+  ] = useState('overview')
+
   const [
     tournament,
     setTournament
@@ -213,11 +219,22 @@ function TournamentDetails({
               team2_id,
               player1_score,
               player2_score,
+              player1_penalty_score,
+              player2_penalty_score,
               round_number,
               stage,
               leg_number,
               tie_id,
+              next_tie_id,
+              next_slot,
               match_order,
+              bracket_side,
+              bracket_order,
+              manual_slot1,
+              manual_slot2,
+              winner_player_id,
+              winner_team_id,
+              completed_at,
               status,
               created_at
             `)
@@ -307,6 +324,39 @@ function TournamentDetails({
   useEffect(() => {
     loadTournament()
   }, [loadTournament])
+
+
+  useEffect(() => {
+    const channel =
+      supabase
+        .channel(
+          `tournament-matches-${tournamentId}`
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'matches',
+            filter:
+              `tournament_id=eq.${tournamentId}`
+          },
+          () => {
+            loadTournament()
+          }
+        )
+        .subscribe()
+
+
+    return () => {
+      supabase.removeChannel(
+        channel
+      )
+    }
+  }, [
+    tournamentId,
+    loadTournament
+  ])
 
 
   const individualPlayers =
@@ -893,7 +943,123 @@ function TournamentDetails({
         </button>
 
 
-        <header className="tournament-hero">
+        <nav className="tournament-navigation">
+
+          <button
+            type="button"
+            className={
+              activePage === 'overview'
+                ? 'tournament-nav-item active'
+                : 'tournament-nav-item'
+            }
+            onClick={() =>
+              setActivePage('overview')
+            }
+          >
+            Overview
+          </button>
+
+          <button
+            type="button"
+            className={
+              activePage === 'participants'
+                ? 'tournament-nav-item active'
+                : 'tournament-nav-item'
+            }
+            onClick={() =>
+              setActivePage('participants')
+            }
+          >
+            Participants
+
+            <span>
+              {participantCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={
+              activePage === 'fixtures'
+                ? 'tournament-nav-item active'
+                : 'tournament-nav-item'
+            }
+            onClick={() =>
+              setActivePage('fixtures')
+            }
+          >
+            Fixtures & Results
+
+            <span>
+              {matches.length}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className={
+              activePage === 'standings'
+                ? 'tournament-nav-item active'
+                : 'tournament-nav-item'
+            }
+            onClick={() =>
+              setActivePage('standings')
+            }
+          >
+            Standings
+          </button>
+
+          <button
+            type="button"
+            className={
+              activePage === 'groups'
+                ? 'tournament-nav-item active'
+                : 'tournament-nav-item'
+            }
+            onClick={() =>
+              setActivePage('groups')
+            }
+          >
+            Groups
+          </button>
+
+          <button
+            type="button"
+            className={
+              activePage === 'bracket'
+                ? 'tournament-nav-item active'
+                : 'tournament-nav-item'
+            }
+            onClick={() =>
+              setActivePage('bracket')
+            }
+          >
+            Bracket
+          </button>
+
+          <button
+            type="button"
+            className={
+              activePage === 'settings'
+                ? 'tournament-nav-item active'
+                : 'tournament-nav-item'
+            }
+            onClick={() =>
+              setActivePage('settings')
+            }
+          >
+            Settings
+          </button>
+
+        </nav>
+
+
+        <header
+          className="tournament-hero"
+          hidden={
+            activePage !== 'overview'
+          }
+        >
           <div className="tournament-title-area">
 
             {tournament.logo_url ? (
@@ -939,7 +1105,12 @@ function TournamentDetails({
         </header>
 
 
-        <section className="details-stats">
+        <section
+          className="details-stats"
+          hidden={
+            activePage !== 'overview'
+          }
+        >
 
           <div className="details-stat-card">
             <span>
@@ -1006,7 +1177,12 @@ function TournamentDetails({
         )}
 
 
-        <section className="participants-section">
+        <section
+          className="participants-section"
+          hidden={
+            activePage !== 'participants'
+          }
+        >
 
           <div className="details-section-heading">
             <div>
@@ -1317,7 +1493,12 @@ function TournamentDetails({
         </section>
 
 
-        <section className="fixture-section">
+        <section
+          className="fixture-section"
+          hidden={
+            activePage !== 'fixtures'
+          }
+        >
 
           <div className="fixture-heading">
 
@@ -1541,14 +1722,81 @@ function TournamentDetails({
         </section>
 
 
-        <StandingsSection
-          tournament={tournament}
-          players={players}
-          teams={teams}
-          groups={groups}
-          groupMembers={groupMembers}
-          matches={matches}
-        />
+        <div
+          hidden={
+            activePage !== 'standings'
+          }
+        >
+          <StandingsSection
+            tournament={tournament}
+            players={players}
+            teams={teams}
+            groups={groups}
+            groupMembers={groupMembers}
+            matches={matches}
+          />
+        </div>
+
+
+        {activePage === 'groups' && (
+          <section className="tournament-subpage">
+
+            <div className="subpage-heading">
+              <p className="eyebrow">
+                COMPETITION
+              </p>
+
+              <h2>
+                Groups
+              </h2>
+
+              <p>
+                Group assignments and qualification will be managed here.
+              </p>
+            </div>
+
+            <div className="subpage-placeholder">
+              Tournament group management will appear here.
+            </div>
+
+          </section>
+        )}
+
+
+        {activePage === 'bracket' && (
+          <BracketSection
+            tournament={tournament}
+            matches={matches}
+            players={players}
+            teams={teams}
+            onChanged={loadTournament}
+          />
+        )}
+
+
+        {activePage === 'settings' && (
+          <section className="tournament-subpage">
+
+            <div className="subpage-heading">
+              <p className="eyebrow">
+                SETTINGS
+              </p>
+
+              <h2>
+                Tournament Settings
+              </h2>
+
+              <p>
+                Manage tournament information, format, status, and administrative options.
+              </p>
+            </div>
+
+            <div className="subpage-placeholder">
+              Tournament settings will be available here.
+            </div>
+
+          </section>
+        )}
 
       </div>
     </main>
