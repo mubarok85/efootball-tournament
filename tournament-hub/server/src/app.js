@@ -19,6 +19,13 @@ app.use(
   express.json()
 )
 
+app.get('/', (req, res) => {
+  res.json({
+    ok: true,
+    message: 'eFootball Tournament API is running.'
+  })
+})
+
 app.get(
   '/api/health',
   (req, res) => {

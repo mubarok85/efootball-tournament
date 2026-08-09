@@ -366,3 +366,302 @@
     flex-basis: 70px;
   }
 }
+
+
+/* =====================================================
+   FIXTURE GENERATION
+   ===================================================== */
+
+.details-success {
+  margin-top: 20px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--secondary);
+  color: var(--primary-hover);
+  font-weight: 600;
+}
+
+
+.fixtures-locked-note {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff8f4;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+
+.fixture-section {
+  margin-top: 28px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--white);
+}
+
+
+.fixture-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+
+.fixture-heading h2 {
+  margin: 5px 0 6px;
+}
+
+
+.fixture-heading p:last-child {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+
+.generate-button {
+  width: auto;
+  min-width: 185px;
+}
+
+
+.fixture-warning {
+  margin-bottom: 18px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff8f4;
+  color: var(--primary-hover);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+.fixtures-empty {
+  padding: 48px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  background: #fffaf7;
+  text-align: center;
+}
+
+
+.fixtures-empty span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 34px;
+}
+
+
+.fixtures-empty strong {
+  display: block;
+  margin-bottom: 7px;
+}
+
+
+.fixtures-empty p {
+  max-width: 500px;
+  margin: auto;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+
+.fixture-sections {
+  display: grid;
+  gap: 26px;
+}
+
+
+.fixture-round {
+  display: grid;
+  gap: 13px;
+}
+
+
+.fixture-round-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+
+.fixture-round-heading h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+
+.fixture-round-heading > span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--primary-hover);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+.fixture-list {
+  display: grid;
+  gap: 10px;
+}
+
+
+.fixture-card {
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--white);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.fixture-card:hover {
+  border-color: var(--primary);
+  box-shadow:
+    0 8px 22px
+    rgba(252, 99, 29, 0.07);
+}
+
+
+.fixture-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+
+.fixture-meta span {
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #fff4ee;
+  color: var(--primary-hover);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.fixture-matchup {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    90px
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+
+.fixture-participant {
+  font-size: 15px;
+}
+
+
+.fixture-participant.home {
+  text-align: right;
+}
+
+
+.fixture-participant.away {
+  text-align: left;
+}
+
+
+.fixture-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+}
+
+
+.fixture-score b {
+  min-width: 31px;
+  min-height: 31px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+}
+
+
+.versus {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--secondary);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+.fixture-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid #f5ded4;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+
+.fixture-status {
+  padding: 5px 8px;
+  border-radius: 999px;
+  text-transform: capitalize;
+  font-weight: 700;
+}
+
+
+.fixture-status-scheduled {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+
+.fixture-status-completed {
+  background: var(--secondary);
+  color: var(--primary-hover);
+}
+
+
+@media (max-width: 650px) {
+  .fixture-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .generate-button {
+    width: 100%;
+  }
+
+  .fixture-matchup {
+    grid-template-columns:
+      1fr
+      55px
+      1fr;
+    gap: 8px;
+  }
+
+  .fixture-participant {
+    font-size: 13px;
+  }
+}

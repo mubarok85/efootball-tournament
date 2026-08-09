@@ -6,8 +6,10 @@ import {
 } from 'react'
 
 import { supabase } from '../lib/supabase'
+import { apiRequest } from '../lib/api'
 
 import './TournamentDetails.css'
+
 
 function TournamentDetails({
   user,
@@ -30,6 +32,16 @@ function TournamentDetails({
   ] = useState([])
 
   const [
+    groups,
+    setGroups
+  ] = useState([])
+
+  const [
+    matches,
+    setMatches
+  ] = useState([])
+
+  const [
     loading,
     setLoading
   ] = useState(true)
@@ -40,8 +52,18 @@ function TournamentDetails({
   ] = useState(false)
 
   const [
+    generating,
+    setGenerating
+  ] = useState(false)
+
+  const [
     error,
     setError
+  ] = useState('')
+
+  const [
+    success,
+    setSuccess
   ] = useState('')
 
   const [
@@ -57,6 +79,7 @@ function TournamentDetails({
     playerOne: '',
     playerTwo: ''
   })
+
 
   const loadTournament =
     useCallback(async () => {
@@ -86,12 +109,12 @@ function TournamentDetails({
 
         const [
           playerResult,
-          teamResult
+          teamResult,
+          groupResult,
+          matchResult
         ] = await Promise.all([
           supabase
-            .from(
-              'tournament_players'
-            )
+            .from('tournament_players')
             .select(`
               id,
               tournament_id,
@@ -112,9 +135,7 @@ function TournamentDetails({
             ),
 
           supabase
-            .from(
-              'tournament_teams'
-            )
+            .from('tournament_teams')
             .select(`
               id,
               tournament_id,
@@ -130,6 +151,68 @@ function TournamentDetails({
               {
                 ascending: true
               }
+            ),
+
+          supabase
+            .from('tournament_groups')
+            .select(`
+              id,
+              tournament_id,
+              name,
+              group_order
+            `)
+            .eq(
+              'tournament_id',
+              tournamentId
+            )
+            .order(
+              'group_order',
+              {
+                ascending: true
+              }
+            ),
+
+          supabase
+            .from('matches')
+            .select(`
+              id,
+              tournament_id,
+              group_id,
+              player1_id,
+              player2_id,
+              team1_id,
+              team2_id,
+              player1_score,
+              player2_score,
+              round_number,
+              stage,
+              leg_number,
+              tie_id,
+              match_order,
+              status,
+              created_at
+            `)
+            .eq(
+              'tournament_id',
+              tournamentId
+            )
+            .order(
+              'round_number',
+              {
+                ascending: true
+              }
+            )
+            .order(
+              'match_order',
+              {
+                ascending: true
+              }
+            )
+            .order(
+              'leg_number',
+              {
+                ascending: true
+              }
             )
         ])
 
@@ -139,6 +222,14 @@ function TournamentDetails({
 
         if (teamResult.error) {
           throw teamResult.error
+        }
+
+        if (groupResult.error) {
+          throw groupResult.error
+        }
+
+        if (matchResult.error) {
+          throw matchResult.error
         }
 
         setTournament(
@@ -151,6 +242,14 @@ function TournamentDetails({
 
         setTeams(
           teamResult.data || []
+        )
+
+        setGroups(
+          groupResult.data || []
+        )
+
+        setMatches(
+          matchResult.data || []
         )
       } catch (loadError) {
         console.error(loadError)
@@ -167,9 +266,11 @@ function TournamentDetails({
       user.id
     ])
 
+
   useEffect(() => {
     loadTournament()
   }, [loadTournament])
+
 
   const individualPlayers =
     useMemo(
@@ -180,6 +281,52 @@ function TournamentDetails({
         ),
       [players]
     )
+
+
+  const playerMap =
+    useMemo(
+      () =>
+        new Map(
+          players.map(
+            (player) => [
+              player.id,
+              player.name
+            ]
+          )
+        ),
+      [players]
+    )
+
+
+  const teamMap =
+    useMemo(
+      () =>
+        new Map(
+          teams.map(
+            (team) => [
+              team.id,
+              team.name
+            ]
+          )
+        ),
+      [teams]
+    )
+
+
+  const groupMap =
+    useMemo(
+      () =>
+        new Map(
+          groups.map(
+            (group) => [
+              group.id,
+              group.name
+            ]
+          )
+        ),
+      [groups]
+    )
+
 
   function getTeamMembers(teamId) {
     return players
@@ -193,6 +340,38 @@ function TournamentDetails({
           (b.team_position || 0)
       )
   }
+
+
+  function getParticipantName(
+    match,
+    side
+  ) {
+    if (
+      tournament.participant_type ===
+      'team'
+    ) {
+      const teamId =
+        side === 1
+          ? match.team1_id
+          : match.team2_id
+
+      return (
+        teamMap.get(teamId) ||
+        'TBD'
+      )
+    }
+
+    const playerId =
+      side === 1
+        ? match.player1_id
+        : match.player2_id
+
+    return (
+      playerMap.get(playerId) ||
+      'TBD'
+    )
+  }
+
 
   async function addIndividual(
     event
@@ -209,8 +388,16 @@ function TournamentDetails({
       return
     }
 
+    if (matches.length > 0) {
+      setError(
+        'Players cannot be added after fixtures have been generated.'
+      )
+      return
+    }
+
     setSaving(true)
     setError('')
+    setSuccess('')
 
     try {
       const {
@@ -238,8 +425,6 @@ function TournamentDetails({
 
       await loadTournament()
     } catch (insertError) {
-      console.error(insertError)
-
       setError(
         insertError.message ||
         'Unable to add player.'
@@ -248,6 +433,7 @@ function TournamentDetails({
       setSaving(false)
     }
   }
+
 
   async function addTeam(event) {
     event.preventDefault()
@@ -272,8 +458,16 @@ function TournamentDetails({
       return
     }
 
+    if (matches.length > 0) {
+      setError(
+        'Teams cannot be added after fixtures have been generated.'
+      )
+      return
+    }
+
     setSaving(true)
     setError('')
+    setSuccess('')
 
     let createdTeamId = null
 
@@ -349,8 +543,6 @@ function TournamentDetails({
 
       await loadTournament()
     } catch (teamError) {
-      console.error(teamError)
-
       if (createdTeamId) {
         await supabase
           .from(
@@ -372,9 +564,17 @@ function TournamentDetails({
     }
   }
 
+
   async function removePlayer(
     playerId
   ) {
+    if (matches.length > 0) {
+      setError(
+        'Players cannot be removed after fixtures have been generated.'
+      )
+      return
+    }
+
     if (
       !window.confirm(
         'Remove this player?'
@@ -384,6 +584,7 @@ function TournamentDetails({
     }
 
     setError('')
+    setSuccess('')
 
     const {
       error: deleteError
@@ -407,9 +608,17 @@ function TournamentDetails({
     await loadTournament()
   }
 
+
   async function removeTeam(
     teamId
   ) {
+    if (matches.length > 0) {
+      setError(
+        'Teams cannot be removed after fixtures have been generated.'
+      )
+      return
+    }
+
     if (
       !window.confirm(
         'Remove this team and both players?'
@@ -419,6 +628,7 @@ function TournamentDetails({
     }
 
     setError('')
+    setSuccess('')
 
     const {
       error: deleteError
@@ -441,6 +651,41 @@ function TournamentDetails({
 
     await loadTournament()
   }
+
+
+  async function generateFixtures() {
+    setGenerating(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const result =
+        await apiRequest(
+          `/api/tournaments/${tournamentId}/generate-fixtures`,
+          {
+            method: 'POST'
+          }
+        )
+
+      setSuccess(
+        `${result.matches} fixtures generated successfully.`
+      )
+
+      await loadTournament()
+    } catch (generateError) {
+      console.error(
+        generateError
+      )
+
+      setError(
+        generateError.message ||
+        'Unable to generate fixtures.'
+      )
+    } finally {
+      setGenerating(false)
+    }
+  }
+
 
   function formatFormat(format) {
     const formats = {
@@ -469,6 +714,117 @@ function TournamentDetails({
     )
   }
 
+
+  function formatStage(stage) {
+    const stages = {
+      league:
+        'League',
+
+      group:
+        'Group Stage',
+
+      round_of_32:
+        'Round of 32',
+
+      round_of_16:
+        'Round of 16',
+
+      quarter_final:
+        'Quarter-Final',
+
+      semi_final:
+        'Semi-Final',
+
+      third_place:
+        'Third Place',
+
+      final:
+        'Final'
+    }
+
+    return (
+      stages[stage] ||
+      stage
+    )
+  }
+
+
+  const isTeamTournament =
+    tournament?.participant_type ===
+    'team'
+
+
+  const participantCount =
+    isTeamTournament
+      ? teams.length
+      : individualPlayers.length
+
+
+  const fixturesBySection =
+    useMemo(() => {
+      const sections = new Map()
+
+      for (const match of matches) {
+        let key
+        let title
+
+        if (
+          match.stage === 'group'
+        ) {
+          const groupName =
+            groupMap.get(
+              match.group_id
+            ) || 'Group'
+
+          key =
+            `group-${match.group_id}-round-${match.round_number}`
+
+          title =
+            `${groupName} · Round ${match.round_number}`
+        } else if (
+          match.stage === 'league'
+        ) {
+          key =
+            `league-round-${match.round_number}`
+
+          title =
+            `League · Round ${match.round_number}`
+        } else {
+          key =
+            `${match.stage}-round-${match.round_number}`
+
+          title =
+            formatStage(
+              match.stage
+            )
+        }
+
+        if (!sections.has(key)) {
+          sections.set(
+            key,
+            {
+              key,
+              title,
+              matches: []
+            }
+          )
+        }
+
+        sections
+          .get(key)
+          .matches
+          .push(match)
+      }
+
+      return [
+        ...sections.values()
+      ]
+    }, [
+      matches,
+      groupMap
+    ])
+
+
   if (loading) {
     return (
       <div className="loading-screen">
@@ -476,6 +832,7 @@ function TournamentDetails({
       </div>
     )
   }
+
 
   if (!tournament) {
     return (
@@ -485,14 +842,6 @@ function TournamentDetails({
     )
   }
 
-  const isTeamTournament =
-    tournament.participant_type ===
-    'team'
-
-  const participantCount =
-    isTeamTournament
-      ? teams.length
-      : individualPlayers.length
 
   return (
     <main className="tournament-details-page">
@@ -505,6 +854,7 @@ function TournamentDetails({
         >
           ← Back to Dashboard
         </button>
+
 
         <header className="tournament-hero">
           <div className="tournament-title-area">
@@ -551,6 +901,7 @@ function TournamentDetails({
           </span>
         </header>
 
+
         <section className="details-stats">
 
           <div className="details-stat-card">
@@ -583,19 +934,6 @@ function TournamentDetails({
 
           <div className="details-stat-card">
             <span>
-              Season
-            </span>
-
-            <strong>
-              {
-                tournament.season ||
-                '—'
-              }
-            </strong>
-          </div>
-
-          <div className="details-stat-card">
-            <span>
               Participants
             </span>
 
@@ -604,13 +942,32 @@ function TournamentDetails({
             </strong>
           </div>
 
+          <div className="details-stat-card">
+            <span>
+              Fixtures
+            </span>
+
+            <strong>
+              {matches.length}
+            </strong>
+          </div>
+
         </section>
+
 
         {error && (
           <div className="details-error">
             {error}
           </div>
         )}
+
+
+        {success && (
+          <div className="details-success">
+            {success}
+          </div>
+        )}
+
 
         <section className="participants-section">
 
@@ -640,95 +997,106 @@ function TournamentDetails({
             </span>
           </div>
 
+
+          {matches.length > 0 && (
+            <div className="fixtures-locked-note">
+              Fixtures have already been generated, so participant changes are locked.
+            </div>
+          )}
+
+
           {isTeamTournament ? (
             <>
-              <form
-                className="participant-form team-form"
-                onSubmit={addTeam}
-              >
-
-                <div className="participant-field">
-                  <label>
-                    Team Name
-                  </label>
-
-                  <input
-                    type="text"
-                    value={
-                      teamForm.teamName
-                    }
-                    placeholder="Team Alpha"
-                    onChange={(event) =>
-                      setTeamForm(
-                        (current) => ({
-                          ...current,
-                          teamName:
-                            event.target.value
-                        })
-                      )
-                    }
-                  />
-                </div>
-
-                <div className="participant-field">
-                  <label>
-                    Player 1
-                  </label>
-
-                  <input
-                    type="text"
-                    value={
-                      teamForm.playerOne
-                    }
-                    placeholder="Player one"
-                    onChange={(event) =>
-                      setTeamForm(
-                        (current) => ({
-                          ...current,
-                          playerOne:
-                            event.target.value
-                        })
-                      )
-                    }
-                  />
-                </div>
-
-                <div className="participant-field">
-                  <label>
-                    Player 2
-                  </label>
-
-                  <input
-                    type="text"
-                    value={
-                      teamForm.playerTwo
-                    }
-                    placeholder="Player two"
-                    onChange={(event) =>
-                      setTeamForm(
-                        (current) => ({
-                          ...current,
-                          playerTwo:
-                            event.target.value
-                        })
-                      )
-                    }
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="primary-button participant-add-button"
-                  disabled={saving}
+              {matches.length === 0 && (
+                <form
+                  className="participant-form team-form"
+                  onSubmit={addTeam}
                 >
-                  {
-                    saving
-                      ? 'Adding...'
-                      : '+ Add Team'
-                  }
-                </button>
 
-              </form>
+                  <div className="participant-field">
+                    <label>
+                      Team Name
+                    </label>
+
+                    <input
+                      type="text"
+                      value={
+                        teamForm.teamName
+                      }
+                      placeholder="Team Alpha"
+                      onChange={(event) =>
+                        setTeamForm(
+                          (current) => ({
+                            ...current,
+                            teamName:
+                              event.target.value
+                          })
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div className="participant-field">
+                    <label>
+                      Player 1
+                    </label>
+
+                    <input
+                      type="text"
+                      value={
+                        teamForm.playerOne
+                      }
+                      placeholder="Player one"
+                      onChange={(event) =>
+                        setTeamForm(
+                          (current) => ({
+                            ...current,
+                            playerOne:
+                              event.target.value
+                          })
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div className="participant-field">
+                    <label>
+                      Player 2
+                    </label>
+
+                    <input
+                      type="text"
+                      value={
+                        teamForm.playerTwo
+                      }
+                      placeholder="Player two"
+                      onChange={(event) =>
+                        setTeamForm(
+                          (current) => ({
+                            ...current,
+                            playerTwo:
+                              event.target.value
+                          })
+                        )
+                      }
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="primary-button participant-add-button"
+                    disabled={saving}
+                  >
+                    {
+                      saving
+                        ? 'Adding...'
+                        : '+ Add Team'
+                    }
+                  </button>
+
+                </form>
+              )}
+
 
               <div className="team-grid">
 
@@ -760,17 +1128,19 @@ function TournamentDetails({
                             </h3>
                           </div>
 
-                          <button
-                            type="button"
-                            className="remove-button"
-                            onClick={() =>
-                              removeTeam(
-                                team.id
-                              )
-                            }
-                          >
-                            Remove
-                          </button>
+                          {matches.length === 0 && (
+                            <button
+                              type="button"
+                              className="remove-button"
+                              onClick={() =>
+                                removeTeam(
+                                  team.id
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          )}
 
                         </div>
 
@@ -807,49 +1177,51 @@ function TournamentDetails({
             </>
           ) : (
             <>
-              <form
-                className="participant-form individual-form"
-                onSubmit={
-                  addIndividual
-                }
-              >
-
-                <div className="participant-field">
-                  <label>
-                    Player Name
-                  </label>
-
-                  <input
-                    type="text"
-                    value={playerName}
-                    placeholder="Enter player name"
-                    onChange={(event) =>
-                      setPlayerName(
-                        event.target.value
-                      )
-                    }
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="primary-button participant-add-button"
-                  disabled={saving}
-                >
-                  {
-                    saving
-                      ? 'Adding...'
-                      : '+ Add Player'
+              {matches.length === 0 && (
+                <form
+                  className="participant-form individual-form"
+                  onSubmit={
+                    addIndividual
                   }
-                </button>
+                >
 
-              </form>
+                  <div className="participant-field">
+                    <label>
+                      Player Name
+                    </label>
+
+                    <input
+                      type="text"
+                      value={playerName}
+                      placeholder="Enter player name"
+                      onChange={(event) =>
+                        setPlayerName(
+                          event.target.value
+                        )
+                      }
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="primary-button participant-add-button"
+                    disabled={saving}
+                  >
+                    {
+                      saving
+                        ? 'Adding...'
+                        : '+ Add Player'
+                    }
+                  </button>
+
+                </form>
+              )}
+
 
               <div className="player-list">
 
                 {
-                  individualPlayers.length ===
-                  0
+                  individualPlayers.length === 0
                     ? (
                       <EmptyParticipants
                         text="No Players Added Yet."
@@ -882,17 +1254,20 @@ function TournamentDetails({
 
                           </div>
 
-                          <button
-                            type="button"
-                            className="remove-button"
-                            onClick={() =>
-                              removePlayer(
-                                player.id
-                              )
-                            }
-                          >
-                            Remove
-                          </button>
+                          {matches.length === 0 && (
+                            <button
+                              type="button"
+                              className="remove-button"
+                              onClick={() =>
+                                removePlayer(
+                                  player.id
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          )}
+
                         </div>
                       )
                     )
@@ -903,10 +1278,243 @@ function TournamentDetails({
           )}
 
         </section>
+
+
+        <section className="fixture-section">
+
+          <div className="fixture-heading">
+
+            <div>
+              <p className="eyebrow">
+                MATCHES
+              </p>
+
+              <h2>
+                Fixtures
+              </h2>
+
+              <p>
+                Generate and manage the tournament schedule.
+              </p>
+            </div>
+
+
+            {matches.length === 0 && (
+              <button
+                type="button"
+                className="primary-button generate-button"
+                disabled={
+                  generating ||
+                  participantCount < 2
+                }
+                onClick={
+                  generateFixtures
+                }
+              >
+                {
+                  generating
+                    ? 'Generating...'
+                    : 'Generate Fixtures'
+                }
+              </button>
+            )}
+
+          </div>
+
+
+          {participantCount < 2 &&
+            matches.length === 0 && (
+              <div className="fixture-warning">
+                Add at least two participants before generating fixtures.
+              </div>
+            )}
+
+
+          {matches.length === 0 ? (
+            <div className="fixtures-empty">
+              <span>
+                ⚽
+              </span>
+
+              <strong>
+                No Fixtures Yet.
+              </strong>
+
+              <p>
+                Once your participants are ready, generate the tournament schedule automatically.
+              </p>
+            </div>
+          ) : (
+            <div className="fixture-sections">
+
+              {fixturesBySection.map(
+                (section) => (
+                  <div
+                    key={
+                      section.key
+                    }
+                    className="fixture-round"
+                  >
+
+                    <div className="fixture-round-heading">
+                      <h3>
+                        {
+                          section.title
+                        }
+                      </h3>
+
+                      <span>
+                        {
+                          section.matches.length
+                        }
+                        {' '}
+                        Match
+                        {
+                          section.matches.length === 1
+                            ? ''
+                            : 'es'
+                        }
+                      </span>
+                    </div>
+
+
+                    <div className="fixture-list">
+
+                      {section.matches.map(
+                        (match) => (
+                          <article
+                            key={
+                              match.id
+                            }
+                            className="fixture-card"
+                          >
+
+                            <div className="fixture-meta">
+                              <span>
+                                {
+                                  formatStage(
+                                    match.stage
+                                  )
+                                }
+                              </span>
+
+                              {match.leg_number > 1 && (
+                                <span>
+                                  Leg {
+                                    match.leg_number
+                                  }
+                                </span>
+                              )}
+
+                              {match.group_id && (
+                                <span>
+                                  {
+                                    groupMap.get(
+                                      match.group_id
+                                    )
+                                  }
+                                </span>
+                              )}
+                            </div>
+
+
+                            <div className="fixture-matchup">
+
+                              <strong className="fixture-participant home">
+                                {
+                                  getParticipantName(
+                                    match,
+                                    1
+                                  )
+                                }
+                              </strong>
+
+
+                              <div className="fixture-score">
+                                {
+                                  match.status ===
+                                  'completed'
+                                    ? (
+                                      <>
+                                        <b>
+                                          {
+                                            match.player1_score
+                                          }
+                                        </b>
+
+                                        <span>
+                                          -
+                                        </span>
+
+                                        <b>
+                                          {
+                                            match.player2_score
+                                          }
+                                        </b>
+                                      </>
+                                    )
+                                    : (
+                                      <span className="versus">
+                                        VS
+                                      </span>
+                                    )
+                                }
+                              </div>
+
+
+                              <strong className="fixture-participant away">
+                                {
+                                  getParticipantName(
+                                    match,
+                                    2
+                                  )
+                                }
+                              </strong>
+
+                            </div>
+
+
+                            <div className="fixture-footer">
+
+                              <span>
+                                Match {
+                                  match.match_order ||
+                                  '—'
+                                }
+                              </span>
+
+                              <span
+                                className={
+                                  `fixture-status fixture-status-${match.status}`
+                                }
+                              >
+                                {
+                                  match.status
+                                }
+                              </span>
+
+                            </div>
+
+                          </article>
+                        )
+                      )}
+
+                    </div>
+
+                  </div>
+                )
+              )}
+
+            </div>
+          )}
+
+        </section>
+
       </div>
     </main>
   )
 }
+
 
 function EmptyParticipants({
   text
@@ -927,5 +1535,6 @@ function EmptyParticipants({
     </div>
   )
 }
+
 
 export default TournamentDetails
