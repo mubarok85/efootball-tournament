@@ -1,240 +1,212 @@
-import { useCallback, useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useState
+} from 'react'
+
 import { supabase } from '../lib/supabase'
+import CreateTournamentWizard from '../components/CreateTournamentWizard'
+
 import './Dashboard.css'
 
 function Dashboard({ user }) {
-  const [tournaments, setTournaments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [error, setError] = useState('')
+  const [tournaments, setTournaments] =
+    useState([])
 
-  const [stats, setStats] = useState({
-    activeTournaments: 0,
-    totalPlayers: 0,
-    matchesPlayed: 0
-  })
+  const [loading, setLoading] =
+    useState(true)
 
-  const [form, setForm] = useState({
-    name: '',
-    game: 'eFootball',
-    description: '',
-    format: 'round_robin'
-  })
+  const [showWizard, setShowWizard] =
+    useState(false)
 
-  const loadDashboard = useCallback(async () => {
-    setLoading(true)
-    setError('')
+  const [error, setError] =
+    useState('')
 
-    try {
-      const { data: tournamentData, error: tournamentError } =
-        await supabase
+  const [stats, setStats] =
+    useState({
+      activeTournaments: 0,
+      totalPlayers: 0,
+      matchesPlayed: 0
+    })
+
+  const loadDashboard =
+    useCallback(async () => {
+      setLoading(true)
+      setError('')
+
+      try {
+        const {
+          data,
+          error: tournamentError
+        } = await supabase
           .from('tournaments')
-          .select(`
-            id,
-            owner_id,
-            name,
-            slug,
-            game,
-            description,
-            format,
-            status,
-            created_at
-          `)
-          .eq('owner_id', user.id)
-          .order('created_at', {
-            ascending: false
-          })
+          .select('*')
+          .eq(
+            'owner_id',
+            user.id
+          )
+          .order(
+            'created_at',
+            {
+              ascending: false
+            }
+          )
 
-      if (tournamentError) {
-        throw tournamentError
-      }
+        if (tournamentError) {
+          throw tournamentError
+        }
 
-      const tournamentsList = tournamentData || []
+        const tournamentList =
+          data || []
 
-      setTournaments(tournamentsList)
-
-      const tournamentIds =
-        tournamentsList.map(
-          (tournament) => tournament.id
+        setTournaments(
+          tournamentList
         )
 
-      let totalPlayers = 0
-      let matchesPlayed = 0
-
-      if (tournamentIds.length > 0) {
-        const [
-          playersResult,
-          matchesResult
-        ] = await Promise.all([
-          supabase
-            .from('tournament_players')
-            .select('id', {
-              count: 'exact',
-              head: true
-            })
-            .in(
-              'tournament_id',
-              tournamentIds
-            ),
-
-          supabase
-            .from('matches')
-            .select('id', {
-              count: 'exact',
-              head: true
-            })
-            .in(
-              'tournament_id',
-              tournamentIds
-            )
-            .eq(
-              'status',
-              'completed'
-            )
-        ])
-
-        if (playersResult.error) {
-          throw playersResult.error
-        }
-
-        if (matchesResult.error) {
-          throw matchesResult.error
-        }
-
-        totalPlayers =
-          playersResult.count || 0
-
-        matchesPlayed =
-          matchesResult.count || 0
-      }
-
-      setStats({
-        activeTournaments:
-          tournamentsList.filter(
+        const tournamentIds =
+          tournamentList.map(
             (tournament) =>
-              tournament.status === 'active'
-          ).length,
+              tournament.id
+          )
 
-        totalPlayers,
+        let totalPlayers = 0
+        let matchesPlayed = 0
 
-        matchesPlayed
-      })
-    } catch (loadError) {
-      console.error(loadError)
+        if (
+          tournamentIds.length > 0
+        ) {
+          const [
+            playerResult,
+            matchResult
+          ] = await Promise.all([
+            supabase
+              .from(
+                'tournament_players'
+              )
+              .select(
+                'id',
+                {
+                  count: 'exact',
+                  head: true
+                }
+              )
+              .in(
+                'tournament_id',
+                tournamentIds
+              ),
 
-      setError(
-        loadError.message ||
+            supabase
+              .from('matches')
+              .select(
+                'id',
+                {
+                  count: 'exact',
+                  head: true
+                }
+              )
+              .in(
+                'tournament_id',
+                tournamentIds
+              )
+              .eq(
+                'status',
+                'completed'
+              )
+          ])
+
+          if (playerResult.error) {
+            throw playerResult.error
+          }
+
+          if (matchResult.error) {
+            throw matchResult.error
+          }
+
+          totalPlayers =
+            playerResult.count || 0
+
+          matchesPlayed =
+            matchResult.count || 0
+        }
+
+        setStats({
+          activeTournaments:
+            tournamentList.filter(
+              (tournament) =>
+                tournament.status ===
+                'active'
+            ).length,
+
+          totalPlayers,
+
+          matchesPlayed
+        })
+      } catch (loadError) {
+        console.error(loadError)
+
+        setError(
+          loadError.message ||
           'Unable to load dashboard.'
-      )
-    } finally {
-      setLoading(false)
-    }
-  }, [user.id])
+        )
+      } finally {
+        setLoading(false)
+      }
+    }, [user.id])
 
   useEffect(() => {
     loadDashboard()
   }, [loadDashboard])
 
-  function handleChange(event) {
-    const {
-      name,
-      value
-    } = event.target
-
-    setForm((current) => ({
-      ...current,
-      [name]: value
-    }))
-  }
-
-  function createSlug(name) {
-    const cleanName = name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-
-    return `${cleanName}-${Date.now().toString(36)}`
-  }
-
-  async function createTournament(event) {
-    event.preventDefault()
-
-    setCreating(true)
-    setError('')
-
-    try {
-      const name = form.name.trim()
-
-      if (!name) {
-        throw new Error(
-          'Tournament name is required.'
-        )
-      }
-
-      const { error: createError } =
-        await supabase
-          .from('tournaments')
-          .insert({
-            owner_id: user.id,
-            name,
-            slug: createSlug(name),
-            game:
-              form.game.trim() ||
-              'eFootball',
-            description:
-              form.description.trim() ||
-              null,
-            format: form.format,
-            status: 'draft'
-          })
-
-      if (createError) {
-        throw createError
-      }
-
-      setForm({
-        name: '',
-        game: 'eFootball',
-        description: '',
-        format: 'round_robin'
-      })
-
-      setShowCreateForm(false)
-
-      await loadDashboard()
-    } catch (createError) {
-      console.error(createError)
-
-      setError(
-        createError.message ||
-          'Unable to create tournament.'
-      )
-    } finally {
-      setCreating(false)
-    }
-  }
-
   async function logout() {
-    const { error: logoutError } =
-      await supabase.auth.signOut()
-
-    if (logoutError) {
-      console.error(logoutError)
-      setError(logoutError.message)
-    }
+    await supabase.auth.signOut()
   }
 
-  function formatTournamentFormat(format) {
+  async function handleTournamentCreated() {
+    setShowWizard(false)
+    await loadDashboard()
+  }
+
+  function formatTournamentFormat(
+    format
+  ) {
     const formats = {
-      round_robin: 'Round Robin',
-      knockout: 'Knockout',
-      groups_knockout:
-        'Groups + Knockout'
+      league:
+        'League',
+
+      multi_group_league:
+        'Multi-Group League',
+
+      knockout:
+        'Knockout',
+
+      league_final:
+        'League + Final',
+
+      league_knockout:
+        'League + Knockout',
+
+      multi_group_tournament:
+        'Multi-Group Tournament'
     }
 
-    return formats[format] || format
+    return (
+      formats[format] ||
+      format
+    )
+  }
+
+  if (showWizard) {
+    return (
+      <CreateTournamentWizard
+        user={user}
+        onCancel={() =>
+          setShowWizard(false)
+        }
+        onCreated={
+          handleTournamentCreated
+        }
+      />
+    )
   }
 
   return (
@@ -272,13 +244,11 @@ function Dashboard({ user }) {
           </p>
 
           <h2>
-            Manage your competitions.
+            Manage Your Competitions.
           </h2>
 
           <p>
-            Create tournaments, manage
-            players, generate fixtures,
-            and track results.
+            Create tournaments, manage participants, generate fixtures, and track results.
           </p>
         </div>
 
@@ -286,14 +256,10 @@ function Dashboard({ user }) {
           type="button"
           className="primary-button dashboard-action"
           onClick={() =>
-            setShowCreateForm(
-              (current) => !current
-            )
+            setShowWizard(true)
           }
         >
-          {showCreateForm
-            ? 'Close Form'
-            : '+ Create Tournament'}
+          + Create Tournament
         </button>
       </section>
 
@@ -328,117 +294,6 @@ function Dashboard({ user }) {
           </strong>
         </div>
       </section>
-
-      {showCreateForm && (
-        <section className="create-section">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">
-                NEW COMPETITION
-              </p>
-
-              <h2>
-                Create Tournament
-              </h2>
-            </div>
-          </div>
-
-          <form
-            className="create-form"
-            onSubmit={createTournament}
-          >
-            <div className="form-group">
-              <label>
-                Tournament Name
-              </label>
-
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Weekend Championship"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>
-                Game
-              </label>
-
-              <input
-                type="text"
-                name="game"
-                value={form.game}
-                onChange={handleChange}
-                placeholder="eFootball"
-                required
-              />
-            </div>
-
-            <div className="form-group form-full">
-              <label>
-                Description
-              </label>
-
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                placeholder="Add a short tournament description."
-                rows="4"
-              />
-            </div>
-
-            <div className="form-group form-full">
-              <label>
-                Tournament Format
-              </label>
-
-              <select
-                name="format"
-                value={form.format}
-                onChange={handleChange}
-              >
-                <option value="round_robin">
-                  Round Robin
-                </option>
-
-                <option value="knockout">
-                  Knockout
-                </option>
-
-                <option value="groups_knockout">
-                  Groups + Knockout
-                </option>
-              </select>
-            </div>
-
-            <div className="form-actions form-full">
-              <button
-                type="button"
-                className="cancel-button"
-                onClick={() =>
-                  setShowCreateForm(false)
-                }
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                className="primary-button create-button"
-                disabled={creating}
-              >
-                {creating
-                  ? 'Creating...'
-                  : 'Create Tournament'}
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
 
       {error && (
         <div className="dashboard-error">
@@ -479,20 +334,18 @@ function Dashboard({ user }) {
             </div>
 
             <h3>
-              No tournaments yet.
+              No Tournaments Yet.
             </h3>
 
             <p>
-              Create your first tournament
-              to start managing players,
-              fixtures, and results.
+              Create your first tournament to begin adding participants and managing your competition.
             </p>
 
             <button
               type="button"
               className="primary-button empty-button"
               onClick={() =>
-                setShowCreateForm(true)
+                setShowWizard(true)
               }
             >
               Create Your First Tournament
@@ -503,18 +356,41 @@ function Dashboard({ user }) {
             {tournaments.map(
               (tournament) => (
                 <article
-                  key={tournament.id}
+                  key={
+                    tournament.id
+                  }
                   className="tournament-card"
                 >
                   <div className="tournament-card-top">
-                    <div className="game-badge">
-                      {tournament.game}
-                    </div>
+                    {tournament.logo_url ? (
+                      <img
+                        src={
+                          tournament.logo_url
+                        }
+                        alt=""
+                        style={{
+                          width: 48,
+                          height: 48,
+                          objectFit:
+                            'cover',
+                          borderRadius:
+                            10
+                        }}
+                      />
+                    ) : (
+                      <div className="game-badge">
+                        eFootball
+                      </div>
+                    )}
 
                     <span
-                      className={`status-badge status-${tournament.status}`}
+                      className={
+                        `status-badge status-${tournament.status}`
+                      }
                     >
-                      {tournament.status}
+                      {
+                        tournament.status
+                      }
                     </span>
                   </div>
 
@@ -523,8 +399,10 @@ function Dashboard({ user }) {
                   </h3>
 
                   <p className="tournament-description">
-                    {tournament.description ||
-                      'No description added.'}
+                    {
+                      tournament.description ||
+                      'No description added.'
+                    }
                   </p>
 
                   <div className="tournament-meta">
@@ -534,34 +412,53 @@ function Dashboard({ user }) {
                       </span>
 
                       <strong>
-                        {formatTournamentFormat(
-                          tournament.format
-                        )}
+                        {
+                          formatTournamentFormat(
+                            tournament.format
+                          )
+                        }
                       </strong>
                     </div>
 
                     <div>
                       <span>
-                        Created
+                        Season
                       </span>
 
                       <strong>
-                        {new Date(
-                          tournament.created_at
-                        ).toLocaleDateString()}
+                        {
+                          tournament.season ||
+                          '—'
+                        }
                       </strong>
                     </div>
-                  </div>
 
-                  <div className="tournament-card-footer">
-                    <span>
-                      Tournament ID
-                    </span>
+                    <div>
+                      <span>
+                        Participants
+                      </span>
 
-                    <code>
-                      {tournament.id
-                        .slice(0, 8)}
-                    </code>
+                      <strong>
+                        {
+                          tournament.participant_type ===
+                          'team'
+                            ? 'Team 2v2'
+                            : 'Individual 1v1'
+                        }
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Status
+                      </span>
+
+                      <strong>
+                        {
+                          tournament.status
+                        }
+                      </strong>
+                    </div>
                   </div>
                 </article>
               )
