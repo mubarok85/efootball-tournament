@@ -6,6 +6,8 @@ import {
   apiRequest
 } from '../lib/api'
 
+import TournamentPublicAccessCard from './TournamentPublicAccessCard'
+
 import './TournamentSettingsSection.css'
 
 
@@ -184,6 +186,12 @@ function TournamentSettingsSection({
           {success}
         </div>
       )}
+
+
+      <TournamentPublicAccessCard
+        tournament={tournament}
+        onChanged={onChanged}
+      />
 
 
       <div className="settings-summary-grid">

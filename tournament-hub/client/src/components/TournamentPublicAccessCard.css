@@ -1,0 +1,180 @@
+.public-access-card {
+  margin-bottom: 18px;
+
+  padding: 20px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fff8f4,
+      #fff
+    );
+}
+
+
+.public-access-main {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 13px;
+}
+
+
+.public-access-icon {
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 11px;
+
+  background: #e5e7eb;
+  color: #9ca3af;
+}
+
+
+.public-access-icon.active {
+  background: #f9dcd1;
+  color: #fc631d;
+}
+
+
+.public-access-label {
+  color: #fc631d;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  letter-spacing: 0.09em;
+}
+
+
+.public-access-main h3 {
+  margin: 4px 0 5px;
+}
+
+
+.public-access-main p {
+  max-width: 690px;
+
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+
+.public-url-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+
+  gap: 7px;
+
+  margin-top: 16px;
+}
+
+
+.public-url-row input {
+  min-width: 0;
+  min-height: 41px;
+
+  padding: 0 11px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 8px;
+
+  background: white;
+  color: #6b7280;
+
+  font-size: 10px;
+}
+
+
+.public-url-row button {
+  min-height: 41px;
+
+  padding: 0 12px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: #fc631d;
+  color: white;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.public-url-row
+.open-public-page {
+  border: 1px solid #f1c8b7;
+
+  background: white;
+  color: #e45712;
+}
+
+
+.public-toggle-button {
+  margin-top: 16px;
+
+  min-height: 42px;
+
+  padding: 0 15px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #fc631d;
+  color: white;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.public-toggle-button.unpublish {
+  border: 1px solid #f1c8b7;
+
+  background: white;
+  color: #e45712;
+}
+
+
+.public-access-message,
+.public-access-error {
+  margin-top: 10px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.public-access-message {
+  color: #e45712;
+}
+
+
+.public-access-error {
+  color: #dc2626;
+}
+
+
+@media (max-width: 620px) {
+  .public-url-row {
+    grid-template-columns:
+      1fr;
+  }
+}
