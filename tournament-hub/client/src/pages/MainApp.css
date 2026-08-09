@@ -1,0 +1,125 @@
+.main-app-shell {
+  min-height: 100vh;
+  background: white;
+}
+
+
+.main-app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(250px, 1fr)
+    auto
+    minmax(120px, 1fr);
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 11px 28px;
+
+  border-bottom:
+    1px solid #f1c8b7;
+
+  background:
+    rgba(255, 255, 255, 0.96);
+
+  backdrop-filter:
+    blur(12px);
+}
+
+
+.main-app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.main-app-logo {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 10px;
+
+  background: #fc631d;
+  color: white;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+.main-app-navigation {
+  display: flex;
+
+  padding: 4px;
+
+  border-radius: 10px;
+
+  background: #f9dcd1;
+}
+
+
+.main-app-navigation button {
+  padding: 9px 16px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: transparent;
+  color: #6b7280;
+
+  font-weight: 700;
+}
+
+
+.main-app-navigation button.active {
+  background: #fc631d;
+  color: white;
+}
+
+
+.main-app-logout {
+  justify-self: end;
+
+  padding: 8px 13px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 8px;
+
+  background: white;
+  color: #e45712;
+
+  font-weight: 700;
+}
+
+
+@media (max-width: 700px) {
+  .main-app-header {
+    grid-template-columns:
+      1fr auto;
+
+    padding: 10px 14px;
+  }
+
+  .main-app-brand strong {
+    display: none;
+  }
+
+  .main-app-navigation {
+    order: 3;
+
+    grid-column:
+      1 / -1;
+
+    justify-self: center;
+  }
+}

@@ -10,6 +10,7 @@ import { apiRequest } from '../lib/api'
 import MatchResultEditor from '../components/MatchResultEditor'
 import StandingsSection from '../components/StandingsSection'
 import BracketSection from '../components/BracketSection'
+import PlayerAssignmentPanel from '../components/PlayerAssignmentPanel'
 
 import './TournamentDetails.css'
 
@@ -132,7 +133,9 @@ function TournamentDetails({
             .select(`
               id,
               tournament_id,
+              master_player_id,
               name,
+              image_url,
               team_id,
               team_position,
               created_at
@@ -1183,6 +1186,14 @@ function TournamentDetails({
             activePage !== 'participants'
           }
         >
+
+          <PlayerAssignmentPanel
+            user={user}
+            tournament={tournament}
+            tournamentId={tournamentId}
+            matches={matches}
+            onChanged={loadTournament}
+          />
 
           <div className="details-section-heading">
             <div>
