@@ -6,6 +6,7 @@ import {
 
 import { supabase } from '../lib/supabase'
 import CreateTournamentWizard from '../components/CreateTournamentWizard'
+import TournamentDetails from './TournamentDetails'
 
 import './Dashboard.css'
 
@@ -18,6 +19,11 @@ function Dashboard({ user }) {
 
   const [showWizard, setShowWizard] =
     useState(false)
+
+  const [
+    selectedTournamentId,
+    setSelectedTournamentId
+  ] = useState(null)
 
   const [error, setError] =
     useState('')
@@ -192,6 +198,19 @@ function Dashboard({ user }) {
     return (
       formats[format] ||
       format
+    )
+  }
+
+  if (selectedTournamentId) {
+    return (
+      <TournamentDetails
+        user={user}
+        tournamentId={selectedTournamentId}
+        onBack={() => {
+          setSelectedTournamentId(null)
+          loadDashboard()
+        }}
+      />
     )
   }
 
@@ -460,6 +479,21 @@ function Dashboard({ user }) {
                       </strong>
                     </div>
                   </div>
+
+                  <button
+                    type="button"
+                    className="primary-button"
+                    style={{
+                      marginTop: '18px'
+                    }}
+                    onClick={() =>
+                      setSelectedTournamentId(
+                        tournament.id
+                      )
+                    }
+                  >
+                    Manage Tournament
+                  </button>
                 </article>
               )
             )}
