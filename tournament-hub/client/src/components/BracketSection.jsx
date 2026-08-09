@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useState
 } from 'react'
@@ -15,6 +16,10 @@ import {
 import {
   apiRequest
 } from '../lib/api'
+
+import {
+  buildLiveGroupBracket
+} from '../lib/liveBracketPreview'
 
 import ParticipantAvatar from './ParticipantAvatar'
 
@@ -55,6 +60,8 @@ function BracketSection({
   matches,
   players,
   teams,
+  groups,
+  groupMembers,
   onChanged
 }) {
   const [
@@ -66,6 +73,11 @@ function BracketSection({
     error,
     setError
   ] = useState('')
+
+  const [
+    showChampionCelebration,
+    setShowChampionCelebration
+  ] = useState(false)
 
 
   const sensors =
@@ -86,6 +98,56 @@ function BracketSection({
       .participant_type
 
 
+  const knockoutStages = [
+    ...STAGES,
+    'third_place',
+    'final'
+  ]
+
+
+  const officialKnockoutExists =
+    matches.some(
+      (match) =>
+        knockoutStages.includes(
+          match.stage
+        )
+    )
+
+
+  const liveProjection =
+    useMemo(
+      () =>
+        buildLiveGroupBracket({
+          tournament,
+          players,
+          teams,
+          groups,
+          groupMembers,
+          matches
+        }),
+      [
+        tournament,
+        players,
+        teams,
+        groups,
+        groupMembers,
+        matches
+      ]
+    )
+
+
+  const bracketMatches =
+    officialKnockoutExists
+      ? matches
+      : liveProjection.matches
+
+
+  const isProjectedBracket =
+    !officialKnockoutExists
+    &&
+    liveProjection.projected
+
+
   const participantMap =
     useMemo(
       () => {
@@ -97,6 +159,7 @@ function BracketSection({
                 (player) =>
                   !player.team_id
               )
+
 
         return new Map(
           source.map(
@@ -113,25 +176,6 @@ function BracketSection({
         teams
       ]
     )
-
-
-  function getParticipantId(
-    match,
-    slot
-  ) {
-    if (
-      participantType ===
-      'team'
-    ) {
-      return slot === 1
-        ? match.team1_id
-        : match.team2_id
-    }
-
-    return slot === 1
-      ? match.player1_id
-      : match.player2_id
-  }
 
 
   function participantImages(
@@ -189,12 +233,33 @@ function BracketSection({
   }
 
 
+  function getParticipantId(
+    match,
+    slot
+  ) {
+    if (
+      participantType ===
+      'team'
+    ) {
+      return slot === 1
+        ? match.team1_id
+        : match.team2_id
+    }
+
+
+    return slot === 1
+      ? match.player1_id
+      : match.player2_id
+  }
+
+
   function participantName(
     id
   ) {
     if (!id) {
       return 'TBD'
     }
+
 
     return (
       participantMap.get(id) ||
@@ -206,15 +271,21 @@ function BracketSection({
   function winnerId(
     tie
   ) {
-    const first =
+    const canonical =
+      tie.find(
+        (match) =>
+          match.leg_number === 1
+      )
+      ||
       tie[0]
+
 
     return participantType ===
       'team'
-      ? first
-          .winner_team_id
-      : first
-          .winner_player_id
+      ? canonical
+          ?.winner_team_id
+      : canonical
+          ?.winner_player_id
   }
 
 
@@ -224,7 +295,8 @@ function BracketSection({
     const totals =
       new Map()
 
-    let completed = false
+    let completed =
+      false
 
 
     tie.forEach(
@@ -236,7 +308,10 @@ function BracketSection({
           return
         }
 
-        completed = true
+
+        completed =
+          true
+
 
         const first =
           getParticipantId(
@@ -257,7 +332,8 @@ function BracketSection({
             (
               totals.get(first) ||
               0
-            ) +
+            )
+            +
             Number(
               match
                 .player1_score ||
@@ -273,7 +349,8 @@ function BracketSection({
             (
               totals.get(second) ||
               0
-            ) +
+            )
+            +
             Number(
               match
                 .player2_score ||
@@ -295,18 +372,14 @@ function BracketSection({
   const tiesByStage =
     useMemo(
       () => {
-        const map =
+        const stageMap =
           new Map()
 
 
-        matches
+        bracketMatches
           .filter(
             (match) =>
-              [
-                ...STAGES,
-                'third_place',
-                'final'
-              ].includes(
+              knockoutStages.includes(
                 match.stage
               )
           )
@@ -321,31 +394,32 @@ function BracketSection({
 
 
               if (
-                !map.has(stage)
+                !stageMap.has(stage)
               ) {
-                map.set(
+                stageMap.set(
                   stage,
                   new Map()
                 )
               }
 
 
+              const ties =
+                stageMap.get(
+                  stage
+                )
+
+
               if (
-                !map
-                  .get(stage)
-                  .has(tieId)
+                !ties.has(tieId)
               ) {
-                map
-                  .get(stage)
-                  .set(
-                    tieId,
-                    []
-                  )
+                ties.set(
+                  tieId,
+                  []
+                )
               }
 
 
-              map
-                .get(stage)
+              ties
                 .get(tieId)
                 .push(match)
             }
@@ -359,50 +433,60 @@ function BracketSection({
         for (
           const [
             stage,
-            stageMap
+            ties
           ]
-          of map.entries()
+          of stageMap.entries()
         ) {
-          const ties =
-            [...stageMap.values()]
+          result.set(
+            stage,
+
+            [...ties.values()]
               .map(
                 (tie) =>
                   tie.sort(
                     (a, b) =>
-                      a.leg_number -
-                      b.leg_number
+                      (
+                        a.leg_number ||
+                        1
+                      )
+                      -
+                      (
+                        b.leg_number ||
+                        1
+                      )
                   )
               )
               .sort(
                 (a, b) =>
                   (
                     a[0]
-                      ?.bracket_order ||
+                      ?.bracket_order
+                    ||
                     a[0]
-                      ?.match_order ||
+                      ?.match_order
+                    ||
                     0
                   )
                   -
                   (
                     b[0]
-                      ?.bracket_order ||
+                      ?.bracket_order
+                    ||
                     b[0]
-                      ?.match_order ||
+                      ?.match_order
+                    ||
                     0
                   )
               )
-
-
-          result.set(
-            stage,
-            ties
           )
         }
 
 
         return result
       },
-      [matches]
+      [
+        bracketMatches
+      ]
     )
 
 
@@ -413,7 +497,9 @@ function BracketSection({
     const ties =
       tiesByStage.get(
         stage
-      ) || []
+      )
+      ||
+      []
 
 
     const explicit =
@@ -432,9 +518,6 @@ function BracketSection({
     }
 
 
-    /*
-     * Fallback for old data.
-     */
     const half =
       Math.ceil(
         ties.length / 2
@@ -459,7 +542,9 @@ function BracketSection({
         (
           tiesByStage.get(
             stage
-          ) || []
+          )
+          ||
+          []
         ).length > 0
     )
 
@@ -468,8 +553,11 @@ function BracketSection({
     (
       tiesByStage.get(
         'final'
-      ) || []
-    )[0] ||
+      )
+      ||
+      []
+    )[0]
+    ||
     null
 
 
@@ -477,8 +565,11 @@ function BracketSection({
     (
       tiesByStage.get(
         'third_place'
-      ) || []
-    )[0] ||
+      )
+      ||
+      []
+    )[0]
+    ||
     null
 
 
@@ -491,9 +582,71 @@ function BracketSection({
           .champion_player_id
 
 
+  const finalCompleted =
+    Boolean(
+      finalTie
+    )
+    &&
+    finalTie.every(
+      (match) =>
+        match.status ===
+        'completed'
+    )
+
+
+  useEffect(
+    () => {
+      if (
+        !championId ||
+        !finalCompleted
+      ) {
+        setShowChampionCelebration(
+          false
+        )
+
+        return
+      }
+
+
+      setShowChampionCelebration(
+        true
+      )
+
+
+      const timer =
+        window.setTimeout(
+          () => {
+            setShowChampionCelebration(
+              false
+            )
+          },
+          5000
+        )
+
+
+      return () => {
+        window.clearTimeout(
+          timer
+        )
+      }
+    },
+    [
+      championId,
+      finalCompleted
+    ]
+  )
+
+
   async function handleDragEnd(
     event
   ) {
+    if (
+      isProjectedBracket
+    ) {
+      return
+    }
+
+
     const source =
       event.active
         ?.data
@@ -567,38 +720,41 @@ function BracketSection({
   }
 
 
-  if (
-    matches.filter(
+  const visibleKnockoutMatches =
+    bracketMatches.filter(
       (match) =>
-        [
-          ...STAGES,
-          'final'
-        ].includes(
+        knockoutStages.includes(
           match.stage
         )
-    ).length === 0
+    )
+
+
+  if (
+    visibleKnockoutMatches.length ===
+    0
   ) {
     return (
-      <section className="bracket-section">
+      <section className="premium-bracket-section">
 
-        <div className="bracket-heading">
-          <div>
-            <p className="eyebrow">
-              LIVE KNOCKOUT
-            </p>
+        <BracketHeader
+          projected={false}
+        />
 
-            <h2>
-              Tournament Bracket
-            </h2>
 
-            <p>
-              The bracket will appear when the knockout stage is generated.
-            </p>
-          </div>
-        </div>
+        <div className="premium-bracket-empty">
 
-        <div className="bracket-empty">
-          No knockout bracket has been generated yet.
+          <WorldCupTrophy
+            championName="Awaiting Champion"
+          />
+
+          <strong>
+            Bracket Not Available Yet.
+          </strong>
+
+          <span>
+            Generate the knockout stage to display the tournament bracket.
+          </span>
+
         </div>
 
       </section>
@@ -607,42 +763,74 @@ function BracketSection({
 
 
   return (
-    <section className="bracket-section">
+    <section className="premium-bracket-section">
 
-      <div className="bracket-heading">
+      {showChampionCelebration &&
+        championId && (
+        <ChampionCelebration
+          name={
+            participantName(
+              championId
+            )
+          }
+          images={
+            participantImages(
+              championId
+            )
+          }
+        />
+      )}
 
-        <div>
-          <p className="eyebrow">
-            LIVE KNOCKOUT
-          </p>
 
-          <h2>
-            Tournament Bracket
-          </h2>
-
-          <p>
-            Results advance automatically. Drag an unplayed participant onto another slot in the same round to correct the draw manually.
-          </p>
-        </div>
-
-        <div className="bracket-live-badge">
-          <span />
-          Live
-        </div>
-
-      </div>
+      <BracketHeader
+        projected={
+          isProjectedBracket
+        }
+      />
 
 
       {error && (
-        <div className="bracket-error">
+        <div className="premium-bracket-error">
           {error}
         </div>
       )}
 
 
       {moving && (
-        <div className="bracket-moving">
-          Updating bracket...
+        <div className="premium-bracket-updating">
+          Updating Bracket...
+        </div>
+      )}
+
+
+      {isProjectedBracket && (
+        <div className="premium-projection-notice">
+
+          <div>
+            <span className="projection-pulse" />
+
+            <div>
+              <strong>
+                Live Qualification Projection.
+              </strong>
+
+              <p>
+                {
+                  liveProjection
+                    .qualifiers
+                    .length
+                }
+                {' '}
+                players currently occupy knockout positions.
+              </p>
+            </div>
+          </div>
+
+
+          <span className="projection-chip">
+            Updates With Standings
+          </span>
+
         </div>
       )}
 
@@ -654,12 +842,18 @@ function BracketSection({
         }
       >
 
-        <div className="bracket-viewport">
+        <div className="premium-bracket-viewport">
 
-          <div className="two-sided-bracket">
+          <div
+            className="premium-two-sided-bracket"
+            style={{
+              '--round-count':
+                activeStages.length
+            }}
+          >
 
 
-            <div className="bracket-wing bracket-left-wing">
+            <div className="premium-bracket-wing premium-left-wing">
 
               {activeStages.map(
                 (stage) => (
@@ -679,9 +873,6 @@ function BracketSection({
                         'left'
                       )
                     }
-                    participantType={
-                      participantType
-                    }
                     participantName={
                       participantName
                     }
@@ -696,6 +887,9 @@ function BracketSection({
                     }
                     winnerId={
                       winnerId
+                    }
+                    projected={
+                      isProjectedBracket
                     }
                   />
                 )
@@ -704,60 +898,55 @@ function BracketSection({
             </div>
 
 
-            <div className="bracket-center">
+            <div className="premium-bracket-center">
 
-              <div className="champion-area">
+              <div className="central-trophy-area">
 
-                <div className="champion-trophy">
-                  🏆
-                </div>
-
-                {championId && (
-                  <ParticipantAvatar
-                    name={
-                      participantName(
-                        championId
-                      )
-                    }
-                    imageUrls={
-                      participantImages(
-                        championId
-                      )
-                    }
-                    size="lg"
-                  />
-                )}
-
-                <strong>
-                  {
+                <WorldCupTrophy
+                  championName={
                     championId
                       ? participantName(
                           championId
                         )
-                      : 'Champion'
+                      : 'Awaiting Champion'
                   }
-                </strong>
+                />
 
-                <span>
-                  CHAMPION
-                </span>
+
+                {championId && (
+                  <div className="central-champion-avatar">
+
+                    <ParticipantAvatar
+                      name={
+                        participantName(
+                          championId
+                        )
+                      }
+                      imageUrls={
+                        participantImages(
+                          championId
+                        )
+                      }
+                      size="lg"
+                    />
+
+                  </div>
+                )}
 
               </div>
 
 
-              <div className="center-final">
+              <div className="premium-center-match">
 
-                <div className="center-title">
+                <span className="premium-center-label final">
                   Final
-                </div>
+                </span>
+
 
                 {finalTie ? (
                   <BracketTie
                     tie={
                       finalTie
-                    }
-                    participantType={
-                      participantType
                     }
                     participantName={
                       participantName
@@ -774,9 +963,13 @@ function BracketSection({
                     winnerId={
                       winnerId
                     }
+                    projected={
+                      isProjectedBracket
+                    }
+                    center
                   />
                 ) : (
-                  <div className="center-tbd">
+                  <div className="premium-center-tbd">
                     Final TBD.
                   </div>
                 )}
@@ -785,18 +978,15 @@ function BracketSection({
 
 
               {bronzeTie && (
-                <div className="center-bronze">
+                <div className="premium-center-match">
 
-                  <div className="center-title bronze">
+                  <span className="premium-center-label bronze">
                     Bronze Final
-                  </div>
+                  </span>
 
                   <BracketTie
                     tie={
                       bronzeTie
-                    }
-                    participantType={
-                      participantType
                     }
                     participantName={
                       participantName
@@ -813,6 +1003,10 @@ function BracketSection({
                     winnerId={
                       winnerId
                     }
+                    projected={
+                      isProjectedBracket
+                    }
+                    center
                   />
 
                 </div>
@@ -821,7 +1015,7 @@ function BracketSection({
             </div>
 
 
-            <div className="bracket-wing bracket-right-wing">
+            <div className="premium-bracket-wing premium-right-wing">
 
               {[
                 ...activeStages
@@ -845,9 +1039,6 @@ function BracketSection({
                           'right'
                         )
                       }
-                      participantType={
-                        participantType
-                      }
                       participantName={
                         participantName
                       }
@@ -862,6 +1053,9 @@ function BracketSection({
                       }
                       winnerId={
                         winnerId
+                      }
+                      projected={
+                        isProjectedBracket
                       }
                     />
                   )
@@ -880,6 +1074,52 @@ function BracketSection({
 }
 
 
+function BracketHeader({
+  projected
+}) {
+  return (
+    <header className="premium-bracket-header">
+
+      <div>
+        <p className="premium-bracket-eyebrow">
+          LIVE KNOCKOUT
+        </p>
+
+        <h2>
+          Tournament Bracket.
+        </h2>
+
+        <p>
+          {
+            projected
+              ? 'The bracket is projected live from the current qualification standings.'
+              : 'Follow every knockout round through to the tournament champion.'
+          }
+        </p>
+      </div>
+
+
+      <div
+        className={
+          projected
+            ? 'premium-live-badge projected'
+            : 'premium-live-badge'
+        }
+      >
+        <span />
+
+        {
+          projected
+            ? 'Live Projection'
+            : 'Live Bracket'
+        }
+      </div>
+
+    </header>
+  )
+}
+
+
 function BracketRound({
   title,
   side,
@@ -888,28 +1128,31 @@ function BracketRound({
   participantImages,
   getParticipantId,
   aggregateScores,
-  winnerId
+  winnerId,
+  projected
 }) {
   return (
     <div
       className={
-        `bracket-round-column ${side}`
+        `premium-round-column ${side}`
       }
     >
 
-      <div className="bracket-round-name">
+      <div className="premium-round-title">
         {title}
       </div>
 
-      <div className="bracket-round-ties">
+
+      <div className="premium-round-ties">
 
         {ties.map(
           (tie) => (
             <BracketTie
               key={
                 tie[0]
-                  .tie_id ||
-                tie[0].id
+                  ?.tie_id
+                ||
+                tie[0]?.id
               }
               tie={tie}
               participantName={
@@ -926,6 +1169,9 @@ function BracketRound({
               }
               winnerId={
                 winnerId
+              }
+              projected={
+                projected
               }
             />
           )
@@ -944,13 +1190,17 @@ function BracketTie({
   participantImages,
   getParticipantId,
   aggregateScores,
-  winnerId
+  winnerId,
+  projected,
+  center = false
 }) {
   const canonical =
     tie.find(
       (match) =>
-        match.leg_number === 1
-    ) ||
+        match.leg_number ===
+        1
+    )
+    ||
     tie[0]
 
 
@@ -983,6 +1233,8 @@ function BracketTie({
 
 
   const locked =
+    projected
+    ||
     tie.some(
       (match) =>
         match.status ===
@@ -992,31 +1244,55 @@ function BracketTie({
 
   return (
     <article
-      className={
+      className={[
+        'premium-bracket-tie',
+
         locked
-          ? 'bracket-tie-card locked'
-          : 'bracket-tie-card'
-      }
+          ? 'locked'
+          : '',
+
+        projected
+          ? 'projected'
+          : '',
+
+        center
+          ? 'center'
+          : ''
+      ].join(' ')}
     >
 
-      <span className="bracket-tie-label">
-        Match {
-          canonical
-            .bracket_order ||
-          canonical
-            .match_order ||
-          '—'
-        }
-      </span>
+      <div className="premium-match-meta">
+
+        <span>
+          Match {
+            canonical
+              ?.bracket_order
+            ||
+            canonical
+              ?.match_order
+            ||
+            '—'
+          }
+        </span>
+
+
+        {projected && (
+          <span className="projected-match-chip">
+            Projected
+          </span>
+        )}
+
+      </div>
 
 
       <BracketSlot
         tieId={
           canonical
-            .tie_id
+            ?.tie_id
         }
         stage={
-          canonical.stage
+          canonical
+            ?.stage
         }
         slot={1}
         participantId={
@@ -1038,7 +1314,9 @@ function BracketTie({
             ? (
                 totals.get(
                   firstId
-                ) ?? 0
+                )
+                ??
+                0
               )
             : null
         }
@@ -1046,10 +1324,15 @@ function BracketTie({
           winner ===
           firstId
         }
-        locked={locked}
+        locked={
+          locked
+        }
         manual={
           canonical
-            .manual_slot1
+            ?.manual_slot1
+        }
+        projected={
+          projected
         }
       />
 
@@ -1057,10 +1340,11 @@ function BracketTie({
       <BracketSlot
         tieId={
           canonical
-            .tie_id
+            ?.tie_id
         }
         stage={
-          canonical.stage
+          canonical
+            ?.stage
         }
         slot={2}
         participantId={
@@ -1082,7 +1366,9 @@ function BracketTie({
             ? (
                 totals.get(
                   secondId
-                ) ?? 0
+                )
+                ??
+                0
               )
             : null
         }
@@ -1090,16 +1376,21 @@ function BracketTie({
           winner ===
           secondId
         }
-        locked={locked}
+        locked={
+          locked
+        }
         manual={
           canonical
-            .manual_slot2
+            ?.manual_slot2
+        }
+        projected={
+          projected
         }
       />
 
 
       {tie.length > 1 && (
-        <span className="bracket-aggregate">
+        <span className="premium-aggregate-label">
           Two-Leg Aggregate
         </span>
       )}
@@ -1119,7 +1410,8 @@ function BracketSlot({
   score,
   winner,
   locked,
-  manual
+  manual,
+  projected
 }) {
   const data = {
     tieId,
@@ -1142,7 +1434,10 @@ function BracketSlot({
         `drag-${tieId}-${slot}`,
 
       disabled:
-        locked ||
+        locked
+        ||
+        projected
+        ||
         !participantId,
 
       data
@@ -1159,7 +1454,9 @@ function BracketSlot({
         `drop-${tieId}-${slot}`,
 
       disabled:
-        locked,
+        locked
+        ||
+        projected,
 
       data
     })
@@ -1185,7 +1482,7 @@ function BracketSlot({
       ref={setRefs}
       style={style}
       className={[
-        'bracket-slot',
+        'premium-bracket-slot',
 
         winner
           ? 'winner'
@@ -1207,27 +1504,37 @@ function BracketSlot({
       {...listeners}
     >
 
-      <span className="slot-drag-handle">
+      <span className="premium-drag-handle">
         {
+          projected ||
           locked
             ? '•'
             : '⋮⋮'
         }
       </span>
 
+
       {
-        participantId ? (
-          <ParticipantAvatar
-            name={name}
-            imageUrls={images}
-            size="sm"
-          />
-        ) : (
-          <span className="bracket-avatar-spacer" />
-        )
+        participantId
+          ? (
+            <ParticipantAvatar
+              name={
+                name
+              }
+              imageUrls={
+                images
+              }
+              size="sm"
+            />
+          )
+          : (
+            <span className="premium-avatar-placeholder" />
+          )
       }
 
-      <span className="slot-player">
+
+      <span className="premium-slot-player">
+
         {name}
 
         {manual && (
@@ -1235,15 +1542,282 @@ function BracketSlot({
             Manual
           </small>
         )}
+
       </span>
 
-      <strong>
+
+      <strong className="premium-slot-score">
         {
           score === null
-            ? '-'
+            ? '–'
             : score
         }
       </strong>
+
+    </div>
+  )
+}
+
+
+function WorldCupTrophy({
+  championName
+}) {
+  return (
+    <div className="world-cup-trophy-wrap">
+
+      <div className="world-cup-glow" />
+
+
+      <svg
+        className="world-cup-trophy-svg"
+        viewBox="0 0 160 210"
+        role="img"
+        aria-label="Tournament champion trophy"
+      >
+
+        <defs>
+
+          <linearGradient
+            id="trophyGold"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stopColor="#FFF3A4"
+            />
+
+            <stop
+              offset="28%"
+              stopColor="#F7CA4C"
+            />
+
+            <stop
+              offset="62%"
+              stopColor="#D99A19"
+            />
+
+            <stop
+              offset="100%"
+              stopColor="#8D5B07"
+            />
+          </linearGradient>
+
+
+          <linearGradient
+            id="trophyDarkGold"
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="1"
+          >
+            <stop
+              offset="0%"
+              stopColor="#EBC04C"
+            />
+
+            <stop
+              offset="100%"
+              stopColor="#7B4A05"
+            />
+          </linearGradient>
+
+        </defs>
+
+
+        <circle
+          cx="80"
+          cy="43"
+          r="30"
+          fill="url(#trophyGold)"
+        />
+
+
+        <path
+          d="M53 43C61 34 69 29 80 28C91 29 99 34 107 43"
+          fill="none"
+          stroke="#8A5B0C"
+          strokeWidth="2.5"
+          opacity="0.72"
+        />
+
+
+        <path
+          d="M54 50C70 57 90 57 106 50"
+          fill="none"
+          stroke="#8A5B0C"
+          strokeWidth="2"
+          opacity="0.65"
+        />
+
+
+        <path
+          d="M80 14C71 28 69 45 80 72C91 45 89 28 80 14Z"
+          fill="none"
+          stroke="#8A5B0C"
+          strokeWidth="2"
+          opacity="0.55"
+        />
+
+
+        <path
+          d="M54 55C42 66 37 81 41 98C45 115 59 122 66 134L76 145L80 112L70 86Z"
+          fill="url(#trophyGold)"
+        />
+
+
+        <path
+          d="M106 55C118 66 123 81 119 98C115 115 101 122 94 134L84 145L80 112L90 86Z"
+          fill="url(#trophyGold)"
+        />
+
+
+        <path
+          d="M68 70C72 83 74 97 73 111L65 146H95L87 111C86 97 88 83 92 70C86 75 74 75 68 70Z"
+          fill="url(#trophyDarkGold)"
+        />
+
+
+        <path
+          d="M62 143H98L104 158H56Z"
+          fill="url(#trophyGold)"
+        />
+
+
+        <rect
+          x="50"
+          y="157"
+          width="60"
+          height="14"
+          rx="4"
+          fill="#9B6610"
+        />
+
+
+        <rect
+          x="44"
+          y="170"
+          width="72"
+          height="15"
+          rx="4"
+          fill="url(#trophyGold)"
+        />
+
+
+        <rect
+          x="38"
+          y="184"
+          width="84"
+          height="12"
+          rx="4"
+          fill="#68400A"
+        />
+
+      </svg>
+
+
+      <div className="trophy-name-slot">
+
+        <span>
+          Champion
+        </span>
+
+        <strong>
+          {championName}
+        </strong>
+
+      </div>
+
+    </div>
+  )
+}
+
+
+function ChampionCelebration({
+  name,
+  images
+}) {
+  const particles =
+    Array.from(
+      {
+        length: 22
+      },
+      (
+        _,
+        index
+      ) => index
+    )
+
+
+  return (
+    <div
+      className="champion-celebration-overlay"
+      aria-live="polite"
+    >
+
+      <div className="champion-confetti">
+
+        {particles.map(
+          (index) => (
+            <span
+              key={index}
+              style={{
+                '--particle-x':
+                  `${5 + ((index * 17) % 90)}%`,
+
+                '--particle-delay':
+                  `${(index % 8) * 0.09}s`,
+
+                '--particle-rotation':
+                  `${index * 31}deg`
+              }}
+            />
+          )
+        )}
+
+      </div>
+
+
+      <div className="champion-celebration-card">
+
+        <p className="champion-celebration-kicker">
+          Tournament Champion.
+        </p>
+
+
+        <WorldCupTrophy
+          championName={
+            name
+          }
+        />
+
+
+        <div className="celebration-player">
+
+          <ParticipantAvatar
+            name={name}
+            imageUrls={
+              images
+            }
+            size="lg"
+          />
+
+
+          <div>
+            <span>
+              Congratulations.
+            </span>
+
+            <strong>
+              {name}
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
   )

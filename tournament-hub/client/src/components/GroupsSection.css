@@ -1,0 +1,387 @@
+.groups-section {
+  padding: 28px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 20px;
+
+  background: white;
+}
+
+
+.groups-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 24px;
+}
+
+
+.groups-heading h2 {
+  margin: 5px 0 6px;
+}
+
+
+.groups-heading p:last-child {
+  margin: 0;
+
+  color: #6b7280;
+}
+
+
+.groups-count {
+  min-width: 100px;
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  background: #fff8f4;
+
+  text-align: center;
+}
+
+
+.groups-count strong {
+  display: block;
+
+  color: #fc631d;
+
+  font-size: 20px;
+}
+
+
+.groups-count span {
+  color: #6b7280;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.groups-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        330px,
+        1fr
+      )
+    );
+
+  gap: 18px;
+}
+
+
+.group-card {
+  overflow: hidden;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 15px;
+
+  background: white;
+}
+
+
+.group-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 16px;
+
+  border-bottom:
+    1px solid #f1c8b7;
+
+  background: #fffaf7;
+}
+
+
+.group-card-header h3 {
+  margin: 0 0 3px;
+}
+
+
+.group-card-header
+div > span {
+  color: #6b7280;
+
+  font-size: 10px;
+}
+
+
+.group-top-count {
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: #f9dcd1;
+  color: #e45712;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.group-player-list {
+  display: grid;
+}
+
+
+.group-player-row {
+  display: grid;
+
+  grid-template-columns:
+    4px
+    27px
+    30px
+    minmax(0, 1fr)
+    38px;
+
+  align-items: center;
+
+  gap: 9px;
+
+  min-height: 58px;
+
+  padding:
+    8px 13px;
+
+  border-bottom:
+    1px solid #f8e4db;
+}
+
+
+.group-player-row:last-child {
+  border-bottom: 0;
+}
+
+
+.group-player-status {
+  width: 4px;
+  height: 30px;
+
+  border-radius: 999px;
+}
+
+
+.group-player-status.green {
+  background: #22c55e;
+}
+
+
+.group-player-status.red {
+  background: #ef4444;
+}
+
+
+.group-player-position {
+  color: #6b7280;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  text-align: center;
+}
+
+
+.group-player-name {
+  min-width: 0;
+}
+
+
+.group-player-name strong {
+  display: block;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 13px;
+}
+
+
+.group-player-name span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #6b7280;
+
+  font-size: 9px;
+}
+
+
+.group-player-points {
+  color: #fc631d;
+
+  font-size: 14px;
+
+  text-align: right;
+}
+
+
+.groups-empty {
+  padding: 45px 20px;
+
+  border: 1px dashed #f1c8b7;
+  border-radius: 13px;
+
+  background: #fffaf7;
+  color: #6b7280;
+
+  text-align: center;
+}
+
+
+@media (max-width: 650px) {
+  .groups-section {
+    padding: 18px;
+  }
+
+
+  .groups-heading {
+    flex-direction: column;
+  }
+
+
+  .groups-grid {
+    grid-template-columns:
+      1fr;
+  }
+}
+
+
+/* =====================================================
+   MANUAL GROUP MANAGEMENT.
+   ===================================================== */
+
+.groups-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.edit-groups-button {
+  min-height: 42px;
+
+  padding: 0 14px;
+
+  border:
+    1px solid #f1c8b7;
+
+  border-radius: 9px;
+
+  background: white;
+  color: #fc631d;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+.edit-groups-button:hover,
+.edit-groups-button.active {
+  background: #fc631d;
+  color: white;
+}
+
+
+.group-edit-notice,
+.group-locked-notice,
+.group-action-error,
+.group-action-success,
+.group-saving {
+  margin-bottom: 16px;
+
+  padding: 11px 13px;
+
+  border-radius: 9px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+.group-edit-notice {
+  border:
+    1px solid #f1c8b7;
+
+  background: #fff8f4;
+  color: #e45712;
+}
+
+
+.group-locked-notice {
+  border:
+    1px solid #e5e7eb;
+
+  background: #f9fafb;
+  color: #6b7280;
+}
+
+
+.group-action-error {
+  background: #fff1ec;
+  color: #b83e0b;
+}
+
+
+.group-action-success {
+  background: #f9dcd1;
+  color: #e45712;
+}
+
+
+.group-saving {
+  background: #f9dcd1;
+  color: #fc631d;
+}
+
+
+.group-player-row.editable {
+  cursor: grab;
+
+  user-select: none;
+
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.group-player-row.editable:active {
+  cursor: grabbing;
+}
+
+
+.group-player-row.dragging {
+  z-index: 30;
+
+  opacity: 0.55;
+
+  background: #fff8f4;
+}
+
+
+.group-player-row.drag-over {
+  background: #f9dcd1;
+
+  box-shadow:
+    inset 0 0 0 1px
+    #fc631d;
+}
+
+
+.group-player-status.neutral {
+  background: #e5e7eb;
+}

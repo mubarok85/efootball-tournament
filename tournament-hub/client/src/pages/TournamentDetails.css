@@ -908,3 +908,20 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+
+/* =====================================================
+   CLEAN PARTICIPANT IDENTITY.
+   ===================================================== */
+
+.player-identity {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+
+.player-identity > strong {
+  font-size: 14px;
+}

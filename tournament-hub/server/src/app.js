@@ -5,6 +5,7 @@ import cors from 'cors'
 
 import { requireAuth } from './middleware/auth.js'
 import tournamentRoutes from './routes/tournaments.js'
+import tournamentAdminRoutes from './routes/tournamentAdmin.js'
 import matchRoutes from './routes/matches.js'
 
 const app = express()
@@ -42,6 +43,12 @@ app.use(
   '/api/tournaments',
   requireAuth,
   tournamentRoutes
+)
+
+app.use(
+  '/api/tournaments',
+  requireAuth,
+  tournamentAdminRoutes
 )
 
 app.use(

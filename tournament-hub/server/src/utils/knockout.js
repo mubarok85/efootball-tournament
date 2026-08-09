@@ -13,11 +13,18 @@ const STAGE_BY_SIZE = {
 }
 
 
-export function isPowerOfTwo(value) {
-  return (
-    value >= 2 &&
-    (value & (value - 1)) === 0
-  )
+export function nextPowerOfTwo(
+  value
+) {
+  let size = 2
+
+  while (
+    size < value
+  ) {
+    size *= 2
+  }
+
+  return size
 }
 
 
@@ -27,6 +34,7 @@ function shuffleParticipants(
   const result = [
     ...participants
   ]
+
 
   for (
     let index =
@@ -48,7 +56,59 @@ function shuffleParticipants(
     ]
   }
 
+
   return result
+}
+
+
+/*
+ * Standard seeded bracket order.
+ *
+ * 8 slots:
+ * 1, 8.
+ * 4, 5.
+ * 2, 7.
+ * 3, 6.
+ *
+ * This spreads strong seeds
+ * and therefore spreads byes
+ * across both sides.
+ */
+function buildSeedOrder(
+  size
+) {
+  if (size === 2) {
+    return [
+      1,
+      2
+    ]
+  }
+
+
+  let seeds = [
+    1,
+    2
+  ]
+
+
+  while (
+    seeds.length <
+    size
+  ) {
+    const sum =
+      seeds.length * 2 + 1
+
+    seeds =
+      seeds.flatMap(
+        (seed) => [
+          seed,
+          sum - seed
+        ]
+      )
+  }
+
+
+  return seeds
 }
 
 
@@ -103,11 +163,120 @@ function participantFields({
 }
 
 
+function getParticipantId(
+  row,
+  participantType,
+  physicalSlot
+) {
+  if (
+    participantType ===
+    'team'
+  ) {
+    return physicalSlot === 1
+      ? row.team1_id
+      : row.team2_id
+  }
+
+
+  return physicalSlot === 1
+    ? row.player1_id
+    : row.player2_id
+}
+
+
+function setWinner(
+  row,
+  participantType,
+  participantId
+) {
+  if (
+    participantType ===
+    'team'
+  ) {
+    row.winner_team_id =
+      participantId
+
+    row.winner_player_id =
+      null
+  } else {
+    row.winner_player_id =
+      participantId
+
+    row.winner_team_id =
+      null
+  }
+}
+
+
+function setLogicalSlot({
+  rows,
+  tieId,
+  logicalSlot,
+  participantType,
+  participantId
+}) {
+  rows
+    .filter(
+      (row) =>
+        row.tie_id ===
+        tieId
+    )
+    .forEach(
+      (row) => {
+        let physicalSlot =
+          logicalSlot
+
+
+        if (
+          row.leg_number ===
+          2
+        ) {
+          physicalSlot =
+            logicalSlot === 1
+              ? 2
+              : 1
+        }
+
+
+        if (
+          participantType ===
+          'team'
+        ) {
+          if (
+            physicalSlot === 1
+          ) {
+            row.team1_id =
+              participantId
+          } else {
+            row.team2_id =
+              participantId
+          }
+
+          return
+        }
+
+
+        if (
+          physicalSlot === 1
+        ) {
+          row.player1_id =
+            participantId
+        } else {
+          row.player2_id =
+            participantId
+        }
+      }
+    )
+}
+
+
 function bracketPosition(
   roundSize,
   tieIndex
 ) {
-  if (roundSize === 2) {
+  if (
+    roundSize === 2
+  ) {
     return {
       bracketSide:
         'center',
@@ -155,54 +324,69 @@ export function generateKnockoutBracket({
   tournamentId,
   participants,
   participantType,
-  twoLegged = false
+  twoLegged = false,
+  shuffle = true
 }) {
   const count =
     participants.length
 
 
   if (
-    !isPowerOfTwo(count)
-    ||
+    count < 2 ||
     count > 32
   ) {
     throw new Error(
-      'Knockout tournaments require 2, 4, 8, 16, or 32 participants.'
+      'Knockout stages currently support between 2 and 32 participants.'
     )
   }
 
 
-  /*
-   * The draw happens once here.
-   *
-   * After these rows are saved,
-   * refreshing the application will
-   * never reshuffle the bracket.
-   */
-  const draw =
-    shuffleParticipants(
-      participants
+  const bracketSize =
+    nextPowerOfTwo(
+      count
+    )
+
+
+  const participantOrder =
+    shuffle
+      ? shuffleParticipants(
+          participants
+        )
+      : [
+          ...participants
+        ]
+
+
+  const seedOrder =
+    buildSeedOrder(
+      bracketSize
     )
 
 
   const roundSizes = []
 
-  let size = count
+  let roundSize =
+    bracketSize
 
-  while (size >= 2) {
-    roundSizes.push(size)
 
-    size /= 2
+  while (
+    roundSize >= 2
+  ) {
+    roundSizes.push(
+      roundSize
+    )
+
+    roundSize /= 2
   }
 
 
   const tieRounds =
     roundSizes.map(
-      (roundSize) =>
+      (size) =>
         Array.from(
           {
             length:
-              roundSize / 2
+              size / 2
           },
           () =>
             randomUUID()
@@ -215,12 +399,12 @@ export function generateKnockoutBracket({
 
   roundSizes.forEach(
     (
-      roundSize,
+      size,
       roundIndex
     ) => {
       const stage =
         STAGE_BY_SIZE[
-          roundSize
+          size
         ]
 
       const ties =
@@ -238,26 +422,31 @@ export function generateKnockoutBracket({
           let second = null
 
 
-          /*
-           * Only the opening round
-           * receives participants.
-           *
-           * Future rounds start TBD.
-           */
           if (
             roundIndex === 0
           ) {
-            first =
-              draw[
-                tieIndex
+            const firstSeed =
+              seedOrder[
+                tieIndex * 2
               ]
 
-            second =
-              draw[
-                count -
-                1 -
-                tieIndex
+            const secondSeed =
+              seedOrder[
+                tieIndex * 2 + 1
               ]
+
+
+            first =
+              participantOrder[
+                firstSeed - 1
+              ] ||
+              null
+
+            second =
+              participantOrder[
+                secondSeed - 1
+              ] ||
+              null
           }
 
 
@@ -266,7 +455,7 @@ export function generateKnockoutBracket({
             bracketOrder
           } =
             bracketPosition(
-              roundSize,
+              size,
               tieIndex
             )
 
@@ -298,11 +487,22 @@ export function generateKnockoutBracket({
               : null
 
 
+          const isOpeningBye =
+            roundIndex === 0
+            &&
+            Boolean(first) !==
+              Boolean(second)
+
+
           const legCount =
-            twoLegged &&
-            stage !== 'final'
-              ? 2
-              : 1
+            isOpeningBye
+              ? 1
+              : (
+                  twoLegged &&
+                  stage !== 'final'
+                    ? 2
+                    : 1
+                )
 
 
           for (
@@ -378,12 +578,122 @@ export function generateKnockoutBracket({
               winner_team_id:
                 null,
 
+              completed_at:
+                null,
+
               status:
                 'scheduled'
             })
           }
         }
       )
+    }
+  )
+
+
+  /*
+   * Resolve automatic byes.
+   *
+   * A bye is represented as a
+   * completed bracket position
+   * without a played score.
+   *
+   * Its participant is immediately
+   * inserted into the next tie.
+   */
+  const openingTieIds =
+    tieRounds[0]
+
+
+  openingTieIds.forEach(
+    (tieId) => {
+      const tieRows =
+        rows.filter(
+          (row) =>
+            row.tie_id ===
+            tieId
+        )
+
+
+      const canonical =
+        tieRows.find(
+          (row) =>
+            row.leg_number === 1
+        )
+
+
+      if (!canonical) {
+        return
+      }
+
+
+      const firstId =
+        getParticipantId(
+          canonical,
+          participantType,
+          1
+        )
+
+      const secondId =
+        getParticipantId(
+          canonical,
+          participantType,
+          2
+        )
+
+
+      const isBye =
+        Boolean(firstId) !==
+        Boolean(secondId)
+
+
+      if (!isBye) {
+        return
+      }
+
+
+      const winnerId =
+        firstId ||
+        secondId
+
+
+      tieRows.forEach(
+        (row) => {
+          row.status =
+            'completed'
+
+          row.completed_at =
+            new Date()
+              .toISOString()
+
+          setWinner(
+            row,
+            participantType,
+            winnerId
+          )
+        }
+      )
+
+
+      if (
+        canonical.next_tie_id &&
+        canonical.next_slot
+      ) {
+        setLogicalSlot({
+          rows,
+
+          tieId:
+            canonical.next_tie_id,
+
+          logicalSlot:
+            canonical.next_slot,
+
+          participantType,
+
+          participantId:
+            winnerId
+        })
+      }
     }
   )
 

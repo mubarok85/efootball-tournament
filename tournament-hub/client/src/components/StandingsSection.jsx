@@ -149,6 +149,29 @@ function StandingsSection({
     )
 
 
+  const leagueCutoff =
+    tournament.format ===
+    'league_final'
+      ? 2
+      : tournament.format ===
+        'league_knockout'
+        ? Number(
+            tournament
+              .qualifiers_count
+          ) || null
+        : null
+
+
+  const groupCutoff =
+    tournament.format ===
+    'multi_group_tournament'
+      ? Number(
+          tournament
+            .qualifiers_per_group
+        ) || null
+      : null
+
+
   const groupTables =
     useMemo(
       () => {
@@ -288,6 +311,9 @@ function StandingsSection({
           standings={
             leagueStandings
           }
+          qualificationCutoff={
+            leagueCutoff
+          }
         />
       )}
 
@@ -307,13 +333,29 @@ function StandingsSection({
                 className="group-standing-card"
               >
 
-                <h3>
-                  {group.name}
-                </h3>
+                <div className="group-standing-title">
+
+                  <h3>
+                    {group.name}
+                  </h3>
+
+                  {groupCutoff && (
+                    <span>
+                      Top {
+                        groupCutoff
+                      }
+                    </span>
+                  )}
+
+                </div>
+
 
                 <StandingsTable
                   standings={
                     standings
+                  }
+                  qualificationCutoff={
+                    groupCutoff
                   }
                 />
 
@@ -330,7 +372,8 @@ function StandingsSection({
 
 
 function StandingsTable({
-  standings
+  standings,
+  qualificationCutoff = null
 }) {
   return (
     <div className="standings-table-wrap">
@@ -385,89 +428,110 @@ function StandingsTable({
         <tbody>
 
           {standings.map(
-            (row) => (
-              <tr key={row.id}>
+            (row) => {
+              const insideCutoff =
+                qualificationCutoff
+                &&
+                row.position <=
+                  qualificationCutoff
 
-                <td>
-                  <span
-                    className={
-                      row.position <= 2
-                        ? 'standing-position top'
-                        : 'standing-position'
-                    }
-                  >
+
+              return (
+                <tr key={row.id}>
+
+                  <td>
+                    <span
+                      className={
+                        row.position <= 2
+                          ? 'standing-position top'
+                          : 'standing-position'
+                      }
+                    >
+                      {
+                        row.position
+                      }
+                    </span>
+                  </td>
+
+
+                  <td>
+                    <div className="standing-participant">
+
+                      {qualificationCutoff && (
+                        <span
+                          className={
+                            insideCutoff
+                              ? 'qualification-status-bar qualification-green'
+                              : 'qualification-status-bar qualification-red'
+                          }
+                        />
+                      )}
+
+
+                      <ParticipantAvatar
+                        name={
+                          row.name
+                        }
+                        imageUrl={
+                          row.imageUrl
+                        }
+                        imageUrls={
+                          row.imageUrls
+                        }
+                        size="sm"
+                      />
+
+
+                      <strong>
+                        {row.name}
+                      </strong>
+
+                    </div>
+                  </td>
+
+
+                  <td>
+                    {row.played}
+                  </td>
+
+                  <td>
+                    {row.won}
+                  </td>
+
+                  <td>
+                    {row.drawn}
+                  </td>
+
+                  <td>
+                    {row.lost}
+                  </td>
+
+                  <td>
+                    {row.goalsFor}
+                  </td>
+
+                  <td>
+                    {row.goalsAgainst}
+                  </td>
+
+                  <td>
                     {
-                      row.position
+                      row.goalDifference >
+                      0
+                        ? `+${row.goalDifference}`
+                        : row.goalDifference
                     }
-                  </span>
-                </td>
+                  </td>
 
-
-                <td>
-                  <div className="standing-participant">
-
-                    <ParticipantAvatar
-                      name={
-                        row.name
-                      }
-                      imageUrl={
-                        row.imageUrl
-                      }
-                      imageUrls={
-                        row.imageUrls
-                      }
-                      size="sm"
-                    />
-
-                    <strong>
-                      {row.name}
+                  <td>
+                    <strong className="standing-points">
+                      {row.points}
                     </strong>
+                  </td>
 
-                  </div>
-                </td>
-
-
-                <td>
-                  {row.played}
-                </td>
-
-                <td>
-                  {row.won}
-                </td>
-
-                <td>
-                  {row.drawn}
-                </td>
-
-                <td>
-                  {row.lost}
-                </td>
-
-                <td>
-                  {row.goalsFor}
-                </td>
-
-                <td>
-                  {row.goalsAgainst}
-                </td>
-
-                <td>
-                  {
-                    row.goalDifference >
-                    0
-                      ? `+${row.goalDifference}`
-                      : row.goalDifference
-                  }
-                </td>
-
-                <td>
-                  <strong className="standing-points">
-                    {row.points}
-                  </strong>
-                </td>
-
-              </tr>
-            )
+                </tr>
+              )
+            }
           )}
 
         </tbody>

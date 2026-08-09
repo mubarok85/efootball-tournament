@@ -1,6 +1,22 @@
 import './ParticipantAvatar.css'
 
 
+function PlayerIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="participant-default-icon"
+    >
+      <path
+        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-3.31 0-6 2.24-6 5v1h12v-1c0-2.76-2.69-5-6-5Z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+
 function ParticipantAvatar({
   name = '',
   imageUrl = null,
@@ -25,14 +41,6 @@ function ParticipantAvatar({
     .slice(0, 2)
 
 
-  const initial =
-    name
-      ?.trim()
-      ?.charAt(0)
-      ?.toUpperCase() ||
-    '?'
-
-
   if (
     images.length === 0
   ) {
@@ -44,7 +52,7 @@ function ParticipantAvatar({
         title={name}
       >
         <div className="participant-avatar-fallback">
-          {initial}
+          <PlayerIcon />
         </div>
       </div>
     )

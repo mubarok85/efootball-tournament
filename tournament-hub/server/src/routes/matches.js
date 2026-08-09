@@ -2,6 +2,10 @@ import {
   Router
 } from 'express'
 
+import {
+  maybeGenerateNextStage
+} from '../utils/progression.js'
+
 
 const router = Router()
 
@@ -563,12 +567,46 @@ router.patch(
         }
 
 
+        let progression = {
+          generated:
+            false
+        }
+
+        let progressionError =
+          null
+
+
+        try {
+          progression =
+            await maybeGenerateNextStage({
+              supabase,
+
+              tournamentId:
+                match.tournament_id
+            })
+        } catch (error) {
+          progressionError =
+            error.message ||
+            'Unable to generate the next tournament stage.'
+        }
+
+
         return res.json({
           message:
-            'Match result saved successfully.',
+            progression.generated
+              ? 'Match result saved. Qualification is complete and the knockout bracket has been generated.'
+              : 'Match result saved successfully.',
 
           advanced:
             false,
+
+          stage_generated:
+            progression.generated,
+
+          progression,
+
+          progression_error:
+            progressionError,
 
           match:
             updatedMatch

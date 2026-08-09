@@ -125,3 +125,58 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+
+/* =====================================================
+   QUALIFICATION STATUS.
+   ===================================================== */
+
+.qualification-status-bar {
+  width: 4px;
+  height: 29px;
+
+  flex: 0 0 4px;
+
+  display: block;
+
+  border-radius: 999px;
+}
+
+
+.qualification-green {
+  background: #22c55e;
+}
+
+
+.qualification-red {
+  background: #ef4444;
+}
+
+
+.group-standing-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 15px;
+}
+
+
+.group-standing-title h3 {
+  margin: 0;
+}
+
+
+.group-standing-title > span {
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: #f9dcd1;
+  color: #e45712;
+
+  font-size: 10px;
+  font-weight: 800;
+}

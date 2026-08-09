@@ -10,6 +10,7 @@ import { apiRequest } from '../lib/api'
 import MatchResultEditor from '../components/MatchResultEditor'
 import StandingsSection from '../components/StandingsSection'
 import BracketSection from '../components/BracketSection'
+import GroupsSection from '../components/GroupsSection'
 import PlayerAssignmentPanel from '../components/PlayerAssignmentPanel'
 import ParticipantAvatar from '../components/ParticipantAvatar'
 
@@ -1463,10 +1464,7 @@ function TournamentDetails({
                       />
                     )
                     : individualPlayers.map(
-                      (
-                        player,
-                        index
-                      ) => (
+                      (player) => (
                         <div
                           key={
                             player.id
@@ -1474,12 +1472,6 @@ function TournamentDetails({
                           className="player-row"
                         >
                           <div className="player-identity">
-
-                            <span className="player-number">
-                              {
-                                index + 1
-                              }
-                            </span>
 
                             <ParticipantAvatar
                               name={
@@ -1847,27 +1839,14 @@ function TournamentDetails({
 
 
         {activePage === 'groups' && (
-          <section className="tournament-subpage">
-
-            <div className="subpage-heading">
-              <p className="eyebrow">
-                COMPETITION
-              </p>
-
-              <h2>
-                Groups
-              </h2>
-
-              <p>
-                Group assignments and qualification will be managed here.
-              </p>
-            </div>
-
-            <div className="subpage-placeholder">
-              Tournament group management will appear here.
-            </div>
-
-          </section>
+          <GroupsSection
+            tournament={tournament}
+            players={players}
+            teams={teams}
+            groups={groups}
+            groupMembers={groupMembers}
+            matches={matches}
+          />
         )}
 
 
@@ -1877,6 +1856,8 @@ function TournamentDetails({
             matches={matches}
             players={players}
             teams={teams}
+            groups={groups}
+            groupMembers={groupMembers}
             onChanged={loadTournament}
           />
         )}

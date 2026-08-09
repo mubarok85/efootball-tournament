@@ -9,8 +9,7 @@ import {
 import {
   distributeGroups,
   generateRoundRobin,
-  getGroupName,
-  isPowerOfTwo
+  getGroupName
 } from '../utils/fixtures.js'
 
 import {
@@ -325,18 +324,22 @@ router.post(
 
 
           if (
-            !isPowerOfTwo(
+            !Number.isInteger(
               qualifiers
             )
             ||
+            qualifiers < 2
+            ||
             qualifiers >
               participants.length
+            ||
+            qualifiers > 32
           ) {
             return res
               .status(400)
               .json({
                 message:
-                  'Knockout qualifiers must be a power of two and cannot exceed the number of participants.'
+                  'Knockout qualifiers must be between 2 and 32 and cannot exceed the number of participants.'
               })
           }
         }
@@ -373,18 +376,15 @@ router.post(
         'knockout'
       ) {
         if (
-          !isPowerOfTwo(
-            participants.length
-          )
+          participants.length < 2
           ||
-          participants.length >
-            32
+          participants.length > 32
         ) {
           return res
             .status(400)
             .json({
               message:
-                'Knockout tournaments require 2, 4, 8, 16, or 32 participants.'
+                'Knockout tournaments currently support between 2 and 32 participants.'
             })
         }
 
@@ -491,9 +491,7 @@ router.post(
 
 
           if (
-            !isPowerOfTwo(
-              totalQualifiers
-            )
+            totalQualifiers < 2
             ||
             totalQualifiers > 32
           ) {
@@ -501,7 +499,7 @@ router.post(
               .status(400)
               .json({
                 message:
-                  'The total number of knockout qualifiers must be 2, 4, 8, 16, or 32.'
+                  'The total number of knockout qualifiers must be between 2 and 32.'
               })
           }
 

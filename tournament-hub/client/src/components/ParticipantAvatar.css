@@ -94,3 +94,13 @@
   right: 0;
   bottom: 0;
 }
+
+
+.participant-default-icon {
+  width: 55%;
+  height: 55%;
+
+  display: block;
+
+  color: #fc631d;
+}
