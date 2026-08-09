@@ -1,2 +1,10 @@
-# efootball-tournament
-Premium tournament management platform with real-time features
+# TournamentHub
+
+Tournament management platform
+
+## Quick Start
+
+```bash
+npm run install:all
+npm run dev
+```
