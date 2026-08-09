@@ -1,0 +1,145 @@
+.admin-status-page {
+  min-height: 100vh;
+
+  display: grid;
+  place-items: center;
+
+  padding: 25px;
+
+  background: #f8f8f8;
+}
+
+
+.admin-status-card {
+  width: min(
+    460px,
+    100%
+  );
+
+  padding: 32px;
+
+  border:
+    1px solid #f1c8b7;
+
+  border-radius: 20px;
+
+  background: white;
+
+  text-align: center;
+}
+
+
+.admin-status-icon {
+  width: 64px;
+  height: 64px;
+
+  display: grid;
+  place-items: center;
+
+  margin:
+    0 auto 18px;
+
+  border-radius: 50%;
+
+  background: #fff8f4;
+
+  font-size: 25px;
+}
+
+
+.admin-status-card > p {
+  margin: 0 0 5px;
+
+  color: #fc631d;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.admin-status-card h1 {
+  margin: 0 0 9px;
+}
+
+
+.admin-status-card
+> span {
+  display: block;
+
+  color: #6b7280;
+
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+
+.admin-status-account {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 8px 15px;
+
+  margin: 24px 0;
+
+  padding: 15px;
+
+  border-radius: 11px;
+
+  background: #fff8f4;
+
+  text-align: left;
+}
+
+
+.admin-status-account span {
+  color: #6b7280;
+
+  font-size: 9px;
+}
+
+
+.admin-status-account strong {
+  font-size: 10px;
+
+  text-align: right;
+}
+
+
+.status-value {
+  color: #fc631d;
+
+  text-transform: capitalize;
+}
+
+
+.admin-status-refresh,
+.admin-status-signout {
+  width: 100%;
+  min-height: 42px;
+
+  border-radius: 9px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.admin-status-refresh {
+  border: 0;
+
+  background: #fc631d;
+  color: white;
+}
+
+
+.admin-status-signout {
+  margin-top: 8px;
+
+  border:
+    1px solid #f1c8b7;
+
+  background: white;
+  color: #e45712;
+}

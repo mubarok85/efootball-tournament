@@ -40,7 +40,8 @@ const FORMAT_NAMES = {
 
 
 function PublicTournamentPage({
-  slug
+  slug,
+  onBack
 }) {
   const [
     tournament,
@@ -528,6 +529,17 @@ function PublicTournamentPage({
 
 
         <header className="public-topbar">
+
+          {onBack && (
+            <button
+              type="button"
+              className="public-back-home"
+              onClick={onBack}
+            >
+              ← Back to Tournaments
+            </button>
+          )}
+
 
           <div className="public-brand">
 

@@ -123,3 +123,198 @@
     justify-self: center;
   }
 }
+
+
+/* =====================================================
+   ADMIN PORTAL SHELL.
+   ===================================================== */
+
+.main-app-header {
+  min-height: 62px;
+
+  display: grid;
+
+  grid-template-columns:
+    auto
+    1fr
+    auto;
+
+  align-items: center;
+
+  gap: 25px;
+
+  padding:
+    9px 22px;
+
+  border-bottom:
+    1px solid #f1c8b7;
+
+  background: white;
+}
+
+
+.main-app-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+.main-app-brand > span {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 10px;
+
+  background: #fc631d;
+  color: white;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.main-app-brand > div {
+  display: grid;
+}
+
+
+.main-app-brand strong {
+  font-size: 13px;
+}
+
+
+.main-app-brand small {
+  color: #6b7280;
+
+  font-size: 8px;
+}
+
+
+.main-app-nav {
+  justify-self: center;
+
+  display: flex;
+
+  gap: 4px;
+
+  padding: 4px;
+
+  border-radius: 10px;
+
+  background: #f9dcd1;
+}
+
+
+.main-app-nav button {
+  min-height: 34px;
+
+  padding:
+    0 13px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #6b7280;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.main-app-nav
+button.active {
+  background: #fc631d;
+  color: white;
+}
+
+
+.main-app-account {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.main-app-account > div {
+  display: grid;
+
+  text-align: right;
+}
+
+
+.main-app-account span {
+  font-size: 9px;
+}
+
+
+.main-app-account strong {
+  color: #fc631d;
+
+  font-size: 8px;
+}
+
+
+.main-app-account button {
+  min-height: 34px;
+
+  padding: 0 10px;
+
+  border:
+    1px solid #f1c8b7;
+
+  border-radius: 7px;
+
+  background: white;
+  color: #e45712;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.main-app-content {
+  width: min(
+    1320px,
+    calc(
+      100% - 32px
+    )
+  );
+
+  margin: 0 auto;
+
+  padding:
+    28px 0 50px;
+}
+
+
+@media (max-width: 760px) {
+  .main-app-header {
+    grid-template-columns:
+      1fr auto;
+  }
+
+
+  .main-app-nav {
+    grid-column:
+      1 / -1;
+
+    grid-row: 2;
+
+    justify-self: stretch;
+
+    overflow-x: auto;
+  }
+
+
+  .main-app-account
+  > div {
+    display: none;
+  }
+}

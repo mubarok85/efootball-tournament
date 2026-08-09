@@ -675,3 +675,21 @@ span {
     flex-direction: column;
   }
 }
+
+
+.public-back-home {
+  min-height: 36px;
+
+  padding: 0 11px;
+
+  border:
+    1px solid #f1c8b7;
+
+  border-radius: 8px;
+
+  background: white;
+  color: #e45712;
+
+  font-size: 9px;
+  font-weight: 800;
+}

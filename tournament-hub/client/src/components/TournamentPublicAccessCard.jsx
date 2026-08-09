@@ -57,10 +57,8 @@ function TournamentPublicAccessCard({
   const publicUrl =
     useMemo(
       () =>
-        `${window.location.origin}/t/${encodeURIComponent(tournament.slug)}`,
-      [
-        tournament.slug
-      ]
+        window.location.origin,
+      []
     )
 
 
@@ -192,8 +190,8 @@ function TournamentPublicAccessCard({
           <p>
             {
               isPublic
-                ? 'Anyone with the link can follow live fixtures, standings, groups, bracket progression, and the champion.'
-                : 'Publish this tournament when you are ready for spectators to follow it.'
+                ? 'The tournament is now visible on the public PESLOVER website.'
+                : 'Publish this tournament when you are ready for it to appear on the public PESLOVER website.'
             }
           </p>
 

@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useState
 } from 'react'
@@ -7,45 +8,83 @@ import {
   supabase
 } from './lib/supabase'
 
-import Auth from './pages/Auth'
+import PublicApp from './pages/PublicApp'
+import AdminAuth from './pages/AdminAuth'
+import AdminAccessStatus from './pages/AdminAccessStatus'
 import MainApp from './pages/MainApp'
-import PublicTournamentPage from './pages/PublicTournamentPage'
 
 
-function getPublicTournamentSlug() {
+function getEntryPoint() {
   const path =
     window.location.pathname
       .replace(
         /\/+$/,
         ''
       )
+    ||
+    '/'
 
 
-  const match =
-    path.match(
-      /^\/t\/([^/]+)$/
-    )
-
-
-  if (!match) {
-    return null
+  if (
+    path ===
+    '/admin'
+  ) {
+    return 'admin'
   }
 
 
-  try {
-    return decodeURIComponent(
-      match[1]
-    )
-  } catch {
-    return match[1]
+  /*
+   * Only two supported URLs.
+   * Any other path returns to
+   * the public homepage.
+   */
+  if (
+    path !==
+    '/'
+  ) {
+    window.history
+      .replaceState(
+        {},
+        '',
+        '/'
+      )
   }
+
+
+  return 'public'
 }
 
 
 function App() {
+  const entryPoint =
+    getEntryPoint()
+
+
+  if (
+    entryPoint ===
+    'admin'
+  ) {
+    return (
+      <AdminPortal />
+    )
+  }
+
+
+  return (
+    <PublicApp />
+  )
+}
+
+
+function AdminPortal() {
   const [
     session,
     setSession
+  ] = useState(null)
+
+  const [
+    profile,
+    setProfile
   ] = useState(null)
 
   const [
@@ -53,89 +92,194 @@ function App() {
     setLoading
   ] = useState(true)
 
+  const [
+    profileLoading,
+    setProfileLoading
+  ] = useState(false)
 
-  const publicTournamentSlug =
-    getPublicTournamentSlug()
+  const [
+    error,
+    setError
+  ] = useState('')
+
+
+  const loadProfile =
+    useCallback(
+      async (
+        userId
+      ) => {
+        if (!userId) {
+          setProfile(null)
+
+          return
+        }
+
+
+        setProfileLoading(
+          true
+        )
+
+        setError('')
+
+
+        const {
+          data,
+          error:
+            profileError
+        } =
+          await supabase
+            .from('profiles')
+            .select(`
+              id,
+              full_name,
+              email,
+              role,
+              approval_status,
+              approved_by,
+              approved_at,
+              created_at
+            `)
+            .eq(
+              'id',
+              userId
+            )
+            .maybeSingle()
+
+
+        if (
+          profileError
+        ) {
+          setError(
+            profileError.message
+          )
+
+          setProfile(null)
+        } else {
+          setProfile(
+            data
+          )
+        }
+
+
+        setProfileLoading(
+          false
+        )
+      },
+      []
+    )
 
 
   useEffect(
     () => {
-      /*
-       * Public tournament pages do
-       * not require an auth session.
-       */
-      if (
-        publicTournamentSlug
-      ) {
-        setLoading(false)
-
-        return undefined
-      }
+      let mounted =
+        true
 
 
       supabase
         .auth
         .getSession()
         .then(
-          ({
+          async ({
             data
           }) => {
-            setSession(
+            if (!mounted) {
+              return
+            }
+
+
+            const nextSession =
               data.session
+
+
+            setSession(
+              nextSession
             )
 
-            setLoading(false)
+
+            if (
+              nextSession
+                ?.user
+                ?.id
+            ) {
+              await loadProfile(
+                nextSession
+                  .user
+                  .id
+              )
+            }
+
+
+            if (mounted) {
+              setLoading(false)
+            }
           }
         )
 
 
       const {
         data:
-          authListener
+          listener
       } =
         supabase
           .auth
           .onAuthStateChange(
-            (
+            async (
               _event,
               nextSession
             ) => {
               setSession(
                 nextSession
               )
+
+
+              if (
+                nextSession
+                  ?.user
+                  ?.id
+              ) {
+                /*
+                 * Small delay allows
+                 * signup trigger to
+                 * create profile.
+                 */
+                window.setTimeout(
+                  () => {
+                    loadProfile(
+                      nextSession
+                        .user
+                        .id
+                    )
+                  },
+                  250
+                )
+              } else {
+                setProfile(null)
+              }
             }
           )
 
 
       return () => {
-        authListener
+        mounted = false
+
+        listener
           .subscription
           .unsubscribe()
       }
     },
     [
-      publicTournamentSlug
+      loadProfile
     ]
   )
 
 
   if (
-    publicTournamentSlug
+    loading ||
+    profileLoading
   ) {
     return (
-      <PublicTournamentPage
-        slug={
-          publicTournamentSlug
-        }
-      />
-    )
-  }
-
-
-  if (loading) {
-    return (
       <div className="loading-screen">
-        Loading...
+        Loading Admin Portal...
       </div>
     )
   }
@@ -143,7 +287,94 @@ function App() {
 
   if (!session) {
     return (
-      <Auth />
+      <AdminAuth />
+    )
+  }
+
+
+  if (
+    error
+    ||
+    !profile
+  ) {
+    return (
+      <main className="admin-status-page">
+
+        <section className="admin-status-card">
+
+          <h1>
+            Unable to Load Admin Profile
+          </h1>
+
+          <p>
+            {
+              error
+              ||
+              'Administrator profile was not found.'
+            }
+          </p>
+
+
+          <button
+            type="button"
+            className="admin-status-refresh"
+            onClick={() =>
+              loadProfile(
+                session.user.id
+              )
+            }
+          >
+            Retry
+          </button>
+
+        </section>
+
+      </main>
+    )
+  }
+
+
+  if (
+    profile
+      .approval_status !==
+    'approved'
+  ) {
+    return (
+      <AdminAccessStatus
+        profile={
+          profile
+        }
+        onRefresh={() =>
+          loadProfile(
+            session.user.id
+          )
+        }
+      />
+    )
+  }
+
+
+  if (
+    ![
+      'admin',
+      'super_admin'
+    ].includes(
+      profile.role
+    )
+  ) {
+    return (
+      <AdminAccessStatus
+        profile={{
+          ...profile,
+          approval_status:
+            'revoked'
+        }}
+        onRefresh={() =>
+          loadProfile(
+            session.user.id
+          )
+        }
+      />
     )
   }
 
@@ -152,6 +383,9 @@ function App() {
     <MainApp
       user={
         session.user
+      }
+      profile={
+        profile
       }
     />
   )

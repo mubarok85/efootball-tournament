@@ -1,0 +1,378 @@
+.admin-management-page {
+  width: 100%;
+}
+
+
+.admin-management-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 25px;
+}
+
+
+.admin-management-heading h1 {
+  margin: 5px 0 6px;
+}
+
+
+.admin-management-heading
+> div:first-child
+> span {
+  color: #6b7280;
+
+  font-size: 11px;
+}
+
+
+.admin-management-count {
+  min-width: 90px;
+
+  padding: 12px;
+
+  border-radius: 11px;
+
+  background: #fff8f4;
+
+  text-align: center;
+}
+
+
+.admin-management-count strong {
+  display: block;
+
+  color: #fc631d;
+
+  font-size: 20px;
+}
+
+
+.admin-management-count span {
+  color: #6b7280;
+
+  font-size: 9px;
+}
+
+
+.admin-request-section {
+  margin-bottom: 28px;
+}
+
+
+.admin-section-title {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+
+.admin-section-title h2 {
+  margin: 0;
+
+  font-size: 16px;
+}
+
+
+.admin-section-title > span {
+  padding: 3px 7px;
+
+  border-radius: 999px;
+
+  background: #f9dcd1;
+  color: #e45712;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.admin-request-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        290px,
+        1fr
+      )
+    );
+
+  gap: 11px;
+}
+
+
+.admin-request-card {
+  display: grid;
+
+  grid-template-columns:
+    45px
+    minmax(0, 1fr);
+
+  gap: 11px;
+
+  padding: 15px;
+
+  border:
+    1px solid #f1c8b7;
+
+  border-radius: 13px;
+
+  background: white;
+}
+
+
+.admin-request-avatar,
+.admin-list-avatar {
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #f9dcd1;
+  color: #e45712;
+
+  font-weight: 800;
+}
+
+
+.admin-request-avatar {
+  width: 45px;
+  height: 45px;
+}
+
+
+.admin-request-info {
+  display: grid;
+
+  gap: 2px;
+}
+
+
+.admin-request-info strong {
+  font-size: 12px;
+}
+
+
+.admin-request-info span {
+  color: #6b7280;
+
+  font-size: 10px;
+}
+
+
+.admin-request-info small {
+  margin-top: 3px;
+
+  color: #fc631d;
+
+  font-size: 8px;
+}
+
+
+.admin-request-actions {
+  grid-column:
+    1 / -1;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 7px;
+}
+
+
+.admin-request-actions button,
+.admin-row-actions button {
+  min-height: 36px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: #fc631d;
+  color: white;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.admin-request-actions
+button.reject,
+.admin-row-actions
+button.revoke {
+  border:
+    1px solid #f1c8b7;
+
+  background: white;
+  color: #dc2626;
+}
+
+
+.admin-list {
+  overflow: hidden;
+
+  border:
+    1px solid #f1c8b7;
+
+  border-radius: 13px;
+
+  background: white;
+}
+
+
+.admin-list-row {
+  display: grid;
+
+  grid-template-columns:
+    38px
+    minmax(160px, 1fr)
+    100px
+    90px
+    auto;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 12px 14px;
+
+  border-bottom:
+    1px solid #f8e4db;
+}
+
+
+.admin-list-row:last-child {
+  border-bottom: 0;
+}
+
+
+.admin-list-avatar {
+  width: 38px;
+  height: 38px;
+}
+
+
+.admin-list-identity {
+  min-width: 0;
+
+  display: grid;
+}
+
+
+.admin-list-identity strong {
+  font-size: 11px;
+}
+
+
+.admin-list-identity span {
+  overflow: hidden;
+
+  color: #6b7280;
+
+  font-size: 9px;
+
+  text-overflow: ellipsis;
+}
+
+
+.admin-role,
+.admin-status {
+  width: fit-content;
+
+  padding: 4px 7px;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  text-transform: capitalize;
+}
+
+
+.admin-role {
+  background: #fff8f4;
+  color: #e45712;
+}
+
+
+.admin-role.super {
+  background: #fc631d;
+  color: white;
+}
+
+
+.admin-status.approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+
+.admin-status.pending {
+  background: #fef3c7;
+  color: #a16207;
+}
+
+
+.admin-status.rejected,
+.admin-status.revoked {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+
+.admin-empty-state {
+  padding: 30px;
+
+  border:
+    1px dashed #f1c8b7;
+
+  border-radius: 11px;
+
+  color: #6b7280;
+
+  text-align: center;
+}
+
+
+.admin-management-error {
+  margin-bottom: 15px;
+
+  padding: 10px;
+
+  border-radius: 8px;
+
+  background: #fff1ec;
+  color: #b83e0b;
+}
+
+
+.admin-management-loading {
+  padding: 50px;
+
+  text-align: center;
+}
+
+
+@media (max-width: 700px) {
+  .admin-list-row {
+    grid-template-columns:
+      38px
+      minmax(0, 1fr);
+  }
+
+
+  .admin-role,
+  .admin-status,
+  .admin-row-actions {
+    grid-column: 2;
+  }
+}

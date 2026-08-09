@@ -8,16 +8,18 @@ import {
 
 import Dashboard from './Dashboard'
 import PlayersPage from './PlayersPage'
+import AdminManagementPage from './AdminManagementPage'
 
 import './MainApp.css'
 
 
 function MainApp({
-  user
+  user,
+  profile
 }) {
   const [
-    page,
-    setPage
+    activePage,
+    setActivePage
   ] = useState(
     'tournaments'
   )
@@ -30,36 +32,47 @@ function MainApp({
   }
 
 
+  const isSuperAdmin =
+    profile?.role ===
+    'super_admin'
+
+
   return (
-    <div className="main-app-shell">
+    <div className="main-app">
 
       <header className="main-app-header">
 
         <div className="main-app-brand">
 
-          <div className="main-app-logo">
-            EF
-          </div>
+          <span>
+            PL
+          </span>
 
-          <strong>
-            eFootball Tournament Hub
-          </strong>
+          <div>
+            <strong>
+              PESLOVER
+            </strong>
+
+            <small>
+              Admin Portal
+            </small>
+          </div>
 
         </div>
 
 
-        <nav className="main-app-navigation">
+        <nav className="main-app-nav">
 
           <button
             type="button"
             className={
-              page ===
+              activePage ===
               'tournaments'
                 ? 'active'
                 : ''
             }
             onClick={() =>
-              setPage(
+              setActivePage(
                 'tournaments'
               )
             }
@@ -71,13 +84,13 @@ function MainApp({
           <button
             type="button"
             className={
-              page ===
+              activePage ===
               'players'
                 ? 'active'
                 : ''
             }
             onClick={() =>
-              setPage(
+              setActivePage(
                 'players'
               )
             }
@@ -85,34 +98,93 @@ function MainApp({
             Players
           </button>
 
+
+          {isSuperAdmin && (
+            <button
+              type="button"
+              className={
+                activePage ===
+                'admins'
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                setActivePage(
+                  'admins'
+                )
+              }
+            >
+              Admins
+            </button>
+          )}
+
         </nav>
 
 
-        <button
-          type="button"
-          className="main-app-logout"
-          onClick={logout}
-        >
-          Logout
-        </button>
+        <div className="main-app-account">
+
+          <div>
+            <span>
+              {
+                profile
+                  ?.full_name
+                ||
+                user.email
+              }
+            </span>
+
+            <strong>
+              {
+                isSuperAdmin
+                  ? 'Super Admin'
+                  : 'Admin'
+              }
+            </strong>
+          </div>
+
+
+          <button
+            type="button"
+            onClick={
+              logout
+            }
+          >
+            Logout
+          </button>
+
+        </div>
 
       </header>
 
 
-      {page ===
-        'tournaments' && (
-        <Dashboard
-          user={user}
-        />
-      )}
+      <main className="main-app-content">
+
+        {activePage ===
+          'tournaments' && (
+          <Dashboard
+            user={user}
+          />
+        )}
 
 
-      {page ===
-        'players' && (
-        <PlayersPage
-          user={user}
-        />
-      )}
+        {activePage ===
+          'players' && (
+          <PlayersPage
+            user={user}
+          />
+        )}
+
+
+        {activePage ===
+          'admins'
+          &&
+          isSuperAdmin && (
+          <AdminManagementPage
+            user={user}
+          />
+        )}
+
+      </main>
 
     </div>
   )
