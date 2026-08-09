@@ -1,0 +1,172 @@
+.result-editor,
+.result-completed {
+  margin-top: 15px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fffaf7;
+}
+
+
+.result-input-row,
+.result-display {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    65px
+    16px
+    65px
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+}
+
+
+.result-team-name:first-child,
+.result-display > span:first-child {
+  text-align: right;
+}
+
+
+.result-team-name:last-child,
+.result-display > span:last-child {
+  text-align: left;
+}
+
+
+.result-team-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.result-input-row input {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  text-align: center;
+  font-weight: 800;
+  outline: none;
+}
+
+
+.result-input-row input:focus {
+  border-color: var(--primary);
+  box-shadow:
+    0 0 0 3px
+    rgba(252, 99, 29, 0.1);
+}
+
+
+.result-dash {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+
+.result-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+
+.result-save,
+.edit-result-button {
+  border: 0;
+  border-radius: 9px;
+  background: var(--primary);
+  color: white;
+  padding: 9px 14px;
+  font-weight: 700;
+}
+
+
+.result-save:hover,
+.edit-result-button:hover {
+  background: var(--primary-hover);
+}
+
+
+.result-cancel {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  padding: 9px 14px;
+  font-weight: 600;
+}
+
+
+.result-error {
+  margin-top: 10px;
+  color: #b83e0b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.result-completed {
+  display: grid;
+  gap: 12px;
+}
+
+
+.result-display {
+  grid-template-columns:
+    1fr
+    110px
+    1fr;
+}
+
+
+.result-score {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+}
+
+
+.result-score strong {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--primary);
+  color: white;
+}
+
+
+.edit-result-button {
+  justify-self: end;
+  background: white;
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+
+
+.edit-result-button:hover {
+  background: var(--secondary);
+}
+
+
+@media (
+  max-width: 650px
+) {
+  .result-input-row {
+    grid-template-columns:
+      1fr
+      50px
+      12px
+      50px
+      1fr;
+  }
+
+  .result-team-name {
+    font-size: 11px;
+  }
+}

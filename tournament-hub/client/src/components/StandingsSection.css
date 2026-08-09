@@ -1,0 +1,110 @@
+.standings-section {
+  margin-top: 28px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--white);
+}
+
+
+.standings-heading {
+  margin-bottom: 22px;
+}
+
+
+.standings-heading h2 {
+  margin: 5px 0 6px;
+}
+
+
+.standings-heading p:last-child {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+
+.standings-table-wrap {
+  overflow-x: auto;
+}
+
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+
+.standings-table th,
+.standings-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f4ddd3;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+
+.standings-table th {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+
+.standings-table th:nth-child(2),
+.standings-table td:nth-child(2) {
+  text-align: left;
+}
+
+
+.standing-position {
+  width: 27px;
+  height: 27px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #f3f4f6;
+  font-weight: 700;
+}
+
+
+.standing-position.top {
+  background: var(--secondary);
+  color: var(--primary);
+}
+
+
+.standing-points {
+  color: var(--primary);
+  font-size: 15px;
+}
+
+
+.group-standings-grid {
+  display: grid;
+  gap: 24px;
+}
+
+
+.group-standing-card {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+}
+
+
+.group-standing-card h3 {
+  margin: 0 0 15px;
+  color: var(--primary-hover);
+}
+
+
+.standings-empty {
+  padding: 30px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  background: #fffaf7;
+  color: var(--text-secondary);
+  text-align: center;
+}

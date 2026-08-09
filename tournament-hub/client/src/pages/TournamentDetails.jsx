@@ -7,6 +7,8 @@ import {
 
 import { supabase } from '../lib/supabase'
 import { apiRequest } from '../lib/api'
+import MatchResultEditor from '../components/MatchResultEditor'
+import StandingsSection from '../components/StandingsSection'
 
 import './TournamentDetails.css'
 
@@ -39,6 +41,11 @@ function TournamentDetails({
   const [
     matches,
     setMatches
+  ] = useState([])
+
+  const [
+    groupMembers,
+    setGroupMembers
   ] = useState([])
 
   const [
@@ -111,6 +118,7 @@ function TournamentDetails({
           playerResult,
           teamResult,
           groupResult,
+          groupMemberResult,
           matchResult
         ] = await Promise.all([
           supabase
@@ -173,6 +181,27 @@ function TournamentDetails({
             ),
 
           supabase
+            .from('tournament_group_members')
+            .select(`
+              id,
+              tournament_id,
+              group_id,
+              player_id,
+              team_id,
+              seed_order
+            `)
+            .eq(
+              'tournament_id',
+              tournamentId
+            )
+            .order(
+              'seed_order',
+              {
+                ascending: true
+              }
+            ),
+
+          supabase
             .from('matches')
             .select(`
               id,
@@ -228,6 +257,10 @@ function TournamentDetails({
           throw groupResult.error
         }
 
+        if (groupMemberResult.error) {
+          throw groupMemberResult.error
+        }
+
         if (matchResult.error) {
           throw matchResult.error
         }
@@ -246,6 +279,10 @@ function TournamentDetails({
 
         setGroups(
           groupResult.data || []
+        )
+
+        setGroupMembers(
+          groupMemberResult.data || []
         )
 
         setMatches(
@@ -1429,38 +1466,11 @@ function TournamentDetails({
                                 }
                               </strong>
 
-
                               <div className="fixture-score">
-                                {
-                                  match.status ===
-                                  'completed'
-                                    ? (
-                                      <>
-                                        <b>
-                                          {
-                                            match.player1_score
-                                          }
-                                        </b>
-
-                                        <span>
-                                          -
-                                        </span>
-
-                                        <b>
-                                          {
-                                            match.player2_score
-                                          }
-                                        </b>
-                                      </>
-                                    )
-                                    : (
-                                      <span className="versus">
-                                        VS
-                                      </span>
-                                    )
-                                }
+                                <span className="versus">
+                                  VS
+                                </span>
                               </div>
-
 
                               <strong className="fixture-participant away">
                                 {
@@ -1472,6 +1482,26 @@ function TournamentDetails({
                               </strong>
 
                             </div>
+
+
+                            <MatchResultEditor
+                              match={match}
+                              homeName={
+                                getParticipantName(
+                                  match,
+                                  1
+                                )
+                              }
+                              awayName={
+                                getParticipantName(
+                                  match,
+                                  2
+                                )
+                              }
+                              onSaved={
+                                loadTournament
+                              }
+                            />
 
 
                             <div className="fixture-footer">
@@ -1509,6 +1539,16 @@ function TournamentDetails({
           )}
 
         </section>
+
+
+        <StandingsSection
+          tournament={tournament}
+          players={players}
+          teams={teams}
+          groups={groups}
+          groupMembers={groupMembers}
+          matches={matches}
+        />
 
       </div>
     </main>
