@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useState
 } from 'react'
 
@@ -9,11 +10,18 @@ import {
 import './AdminAuth.css'
 
 
-function AdminAuth() {
+function AdminAuth({
+  recoveryMode = false,
+  onRecoveryComplete
+}) {
   const [
     mode,
     setMode
-  ] = useState('login')
+  ] = useState(
+    recoveryMode
+      ? 'change-password'
+      : 'login'
+  )
 
   const [
     fullName,
@@ -31,6 +39,16 @@ function AdminAuth() {
   ] = useState('')
 
   const [
+    newPassword,
+    setNewPassword
+  ] = useState('')
+
+  const [
+    confirmPassword,
+    setConfirmPassword
+  ] = useState('')
+
+  const [
     loading,
     setLoading
   ] = useState(false)
@@ -43,7 +61,53 @@ function AdminAuth() {
   const [
     message,
     setMessage
-  ] = useState('')
+  ] = useState(
+    () => {
+      const flash =
+        sessionStorage.getItem(
+          'peslover_admin_flash'
+        )
+
+      if (flash) {
+        sessionStorage.removeItem(
+          'peslover_admin_flash'
+        )
+      }
+
+      return flash || ''
+    }
+  )
+
+
+  useEffect(
+    () => {
+      if (
+        recoveryMode
+      ) {
+        setMode(
+          'change-password'
+        )
+      }
+    },
+    [recoveryMode]
+  )
+
+
+  function clearMessages() {
+    setError('')
+    setMessage('')
+  }
+
+
+  function switchMode(
+    nextMode
+  ) {
+    clearMessages()
+
+    setMode(
+      nextMode
+    )
+  }
 
 
   async function handleSubmit(
@@ -51,99 +115,32 @@ function AdminAuth() {
   ) {
     event.preventDefault()
 
+    clearMessages()
+
     setLoading(true)
-    setError('')
-    setMessage('')
 
 
     try {
       if (
         mode === 'register'
       ) {
-        if (
-          !fullName.trim()
-        ) {
-          throw new Error(
-            'Full name is required.'
-          )
-        }
-
-
-        const {
-          data,
-          error:
-            signUpError
-        } =
-          await supabase
-            .auth
-            .signUp({
-              email:
-                email.trim(),
-
-              password,
-
-              options: {
-                data: {
-                  full_name:
-                    fullName.trim(),
-
-                  requested_role:
-                    'admin'
-                }
-              }
-            })
-
-
-        if (
-          signUpError
-        ) {
-          throw signUpError
-        }
-
-
-        if (
-          !data.session
-        ) {
-          setMessage(
-            'Registration completed. Please verify your email if required, then log in. Your admin account will remain pending until the Super Admin approves it.'
-          )
-
-          setMode(
-            'login'
-          )
-
-          setPassword('')
-
-          return
-        }
-
-
-        setMessage(
-          'Registration completed. Your account is waiting for Super Admin approval.'
-        )
-
-        return
+        await registerAdmin()
       }
 
-
-      const {
-        error:
-          loginError
-      } =
-        await supabase
-          .auth
-          .signInWithPassword({
-            email:
-              email.trim(),
-
-            password
-          })
-
-
-      if (
-        loginError
+      else if (
+        mode === 'forgot'
       ) {
-        throw loginError
+        await sendResetEmail()
+      }
+
+      else if (
+        mode === 'change-password'
+      ) {
+        await changePassword()
+      }
+
+      else {
+        await loginAdmin()
       }
     } catch (
       requestError
@@ -159,15 +156,208 @@ function AdminAuth() {
   }
 
 
-  function switchMode(
-    nextMode
-  ) {
-    setMode(
-      nextMode
+  async function loginAdmin() {
+    const {
+      error:
+        loginError
+    } =
+      await supabase
+        .auth
+        .signInWithPassword({
+          email:
+            email
+              .trim(),
+
+          password
+        })
+
+
+    if (
+      loginError
+    ) {
+      throw loginError
+    }
+  }
+
+
+  async function registerAdmin() {
+    if (
+      !fullName.trim()
+    ) {
+      throw new Error(
+        'Full name is required.'
+      )
+    }
+
+
+    const {
+      data,
+      error:
+        signUpError
+    } =
+      await supabase
+        .auth
+        .signUp({
+          email:
+            email
+              .trim(),
+
+          password,
+
+          options: {
+            data: {
+              full_name:
+                fullName
+                  .trim(),
+
+              requested_role:
+                'admin'
+            }
+          }
+        })
+
+
+    if (
+      signUpError
+    ) {
+      throw signUpError
+    }
+
+
+    if (
+      !data.session
+    ) {
+      setMessage(
+        'Registration completed. Verify your email if required, then log in. Your account must still be approved by the Super Admin.'
+      )
+
+      setPassword('')
+
+      setMode(
+        'login'
+      )
+
+      return
+    }
+
+
+    setMessage(
+      'Registration completed. Your account is waiting for Super Admin approval.'
+    )
+  }
+
+
+  async function sendResetEmail() {
+    const normalizedEmail =
+      email
+        .trim()
+        .toLowerCase()
+
+
+    if (
+      !normalizedEmail
+    ) {
+      throw new Error(
+        'Enter your administrator email address.'
+      )
+    }
+
+
+    const redirectTo =
+      `${window.location.origin}/admin`
+
+
+    const {
+      error:
+        resetError
+    } =
+      await supabase
+        .auth
+        .resetPasswordForEmail(
+          normalizedEmail,
+          {
+            redirectTo
+          }
+        )
+
+
+    if (
+      resetError
+    ) {
+      throw resetError
+    }
+
+
+    setMessage(
+      'If this administrator account exists, Supabase has sent a password reset link to the email address.'
+    )
+  }
+
+
+  async function changePassword() {
+    if (
+      newPassword.length <
+      6
+    ) {
+      throw new Error(
+        'Your new password must contain at least 6 characters.'
+      )
+    }
+
+
+    if (
+      newPassword !==
+      confirmPassword
+    ) {
+      throw new Error(
+        'The passwords do not match.'
+      )
+    }
+
+
+    const {
+      error:
+        updateError
+    } =
+      await supabase
+        .auth
+        .updateUser({
+          password:
+            newPassword
+        })
+
+
+    if (
+      updateError
+    ) {
+      throw updateError
+    }
+
+
+    sessionStorage.setItem(
+      'peslover_admin_flash',
+      'Password changed successfully. Sign in with your new password.'
     )
 
-    setError('')
-    setMessage('')
+
+    await supabase
+      .auth
+      .signOut()
+
+
+    window.history
+      .replaceState(
+        {},
+        '',
+        '/admin'
+      )
+
+
+    setNewPassword('')
+    setConfirmPassword('')
+
+
+    onRecoveryComplete?.()
   }
 
 
@@ -182,7 +372,9 @@ function AdminAuth() {
             PL
           </span>
 
+
           <div>
+
             <strong>
               PESLOVER
             </strong>
@@ -190,6 +382,7 @@ function AdminAuth() {
             <small>
               Administration Portal
             </small>
+
           </div>
 
         </div>
@@ -201,65 +394,86 @@ function AdminAuth() {
             ADMIN ACCESS
           </p>
 
+
           <h1>
             {
               mode ===
               'login'
                 ? 'Welcome Back'
-                : 'Request Admin Access'
+                : mode ===
+                  'register'
+                  ? 'Request Admin Access'
+                  : mode ===
+                    'forgot'
+                    ? 'Reset Password'
+                    : 'Create New Password'
             }
           </h1>
+
 
           <span>
             {
               mode ===
               'login'
-                ? 'Sign in to manage tournaments and competition data.'
-                : 'Register your account. Access requires Super Admin approval.'
+                ? 'Sign in to manage PESLOVER tournaments.'
+                : mode ===
+                  'register'
+                  ? 'Register your account. Super Admin approval is required before access is granted.'
+                  : mode ===
+                    'forgot'
+                    ? 'Enter your administrator email. Supabase will send you a secure password reset link.'
+                    : 'Choose a new password for your administrator account.'
             }
           </span>
 
         </div>
 
 
-        <div className="admin-auth-tabs">
+        {[
+          'login',
+          'register'
+        ].includes(
+          mode
+        ) && (
+          <div className="admin-auth-tabs">
 
-          <button
-            type="button"
-            className={
-              mode ===
-              'login'
-                ? 'active'
-                : ''
-            }
-            onClick={() =>
-              switchMode(
+            <button
+              type="button"
+              className={
+                mode ===
                 'login'
-              )
-            }
-          >
-            Login
-          </button>
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                switchMode(
+                  'login'
+                )
+              }
+            >
+              Login
+            </button>
 
 
-          <button
-            type="button"
-            className={
-              mode ===
-              'register'
-                ? 'active'
-                : ''
-            }
-            onClick={() =>
-              switchMode(
+            <button
+              type="button"
+              className={
+                mode ===
                 'register'
-              )
-            }
-          >
-            Register
-          </button>
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                switchMode(
+                  'register'
+                )
+              }
+            >
+              Register
+            </button>
 
-        </div>
+          </div>
+        )}
 
 
         <form
@@ -271,6 +485,7 @@ function AdminAuth() {
           {mode ===
             'register' && (
             <label>
+
               <span>
                 Full Name
               </span>
@@ -283,60 +498,184 @@ function AdminAuth() {
                 onChange={
                   (event) =>
                     setFullName(
-                      event.target
+                      event
+                        .target
                         .value
                     )
                 }
                 placeholder="Your full name"
                 required
               />
+
             </label>
           )}
 
 
-          <label>
-            <span>
-              Email Address
-            </span>
+          {mode !==
+            'change-password' && (
+            <label>
 
-            <input
-              type="email"
-              value={email}
-              onChange={
-                (event) =>
-                  setEmail(
-                    event.target
-                      .value
-                  )
+              <span>
+                Email Address
+              </span>
+
+              <input
+                type="email"
+                value={
+                  email
+                }
+                onChange={
+                  (event) =>
+                    setEmail(
+                      event
+                        .target
+                        .value
+                    )
+                }
+                placeholder="admin@example.com"
+                autoComplete="email"
+                required
+              />
+
+            </label>
+          )}
+
+
+          {[
+            'login',
+            'register'
+          ].includes(
+            mode
+          ) && (
+            <label>
+
+              <span>
+                Password
+              </span>
+
+              <input
+                type="password"
+                value={
+                  password
+                }
+                onChange={
+                  (event) =>
+                    setPassword(
+                      event
+                        .target
+                        .value
+                    )
+                }
+                placeholder="••••••••"
+                minLength="6"
+                autoComplete={
+                  mode ===
+                  'login'
+                    ? 'current-password'
+                    : 'new-password'
+                }
+                required
+              />
+
+            </label>
+          )}
+
+
+          {mode ===
+            'change-password' && (
+            <>
+
+              <div className="admin-recovery-success-icon">
+                ✓
+              </div>
+
+
+              <div className="admin-recovery-ready">
+
+                <strong>
+                  Recovery Link Verified
+                </strong>
+
+                <span>
+                  Enter and confirm your new administrator password.
+                </span>
+
+              </div>
+
+
+              <label>
+
+                <span>
+                  New Password
+                </span>
+
+                <input
+                  type="password"
+                  value={
+                    newPassword
+                  }
+                  onChange={
+                    (event) =>
+                      setNewPassword(
+                        event
+                          .target
+                          .value
+                      )
+                  }
+                  placeholder="New password"
+                  minLength="6"
+                  autoComplete="new-password"
+                  required
+                />
+
+              </label>
+
+
+              <label>
+
+                <span>
+                  Confirm New Password
+                </span>
+
+                <input
+                  type="password"
+                  value={
+                    confirmPassword
+                  }
+                  onChange={
+                    (event) =>
+                      setConfirmPassword(
+                        event
+                          .target
+                          .value
+                      )
+                  }
+                  placeholder="Confirm new password"
+                  minLength="6"
+                  autoComplete="new-password"
+                  required
+                />
+
+              </label>
+
+            </>
+          )}
+
+
+          {mode ===
+            'login' && (
+            <button
+              type="button"
+              className="admin-forgot-password"
+              onClick={() =>
+                switchMode(
+                  'forgot'
+                )
               }
-              placeholder="admin@example.com"
-              required
-            />
-          </label>
-
-
-          <label>
-            <span>
-              Password
-            </span>
-
-            <input
-              type="password"
-              value={
-                password
-              }
-              onChange={
-                (event) =>
-                  setPassword(
-                    event.target
-                      .value
-                  )
-              }
-              placeholder="••••••••"
-              minLength="6"
-              required
-            />
-          </label>
+            >
+              Forgot Password?
+            </button>
+          )}
 
 
           {error && (
@@ -366,9 +705,31 @@ function AdminAuth() {
                 : mode ===
                   'login'
                   ? 'Login to Admin Portal'
-                  : 'Register for Approval'
+                  : mode ===
+                    'register'
+                    ? 'Register for Approval'
+                    : mode ===
+                      'forgot'
+                      ? 'Send Reset Email'
+                      : 'Save New Password'
             }
           </button>
+
+
+          {mode ===
+            'forgot' && (
+            <button
+              type="button"
+              className="admin-back-login"
+              onClick={() =>
+                switchMode(
+                  'login'
+                )
+              }
+            >
+              ← Back to Login
+            </button>
+          )}
 
         </form>
 

@@ -33,11 +33,6 @@ function getEntryPoint() {
   }
 
 
-  /*
-   * Only two supported URLs.
-   * Any other path returns to
-   * the public homepage.
-   */
   if (
     path !==
     '/'
@@ -52,6 +47,21 @@ function getEntryPoint() {
 
 
   return 'public'
+}
+
+
+function hasRecoveryMarker() {
+  return (
+    window.location.hash
+      .includes(
+        'type=recovery'
+      )
+    ||
+    window.location.search
+      .includes(
+        'type=recovery'
+      )
+  )
 }
 
 
@@ -101,6 +111,14 @@ function AdminPortal() {
     error,
     setError
   ] = useState('')
+
+  const [
+    recoveryMode,
+    setRecoveryMode
+  ] = useState(
+    () =>
+      hasRecoveryMarker()
+  )
 
 
   const loadProfile =
@@ -179,7 +197,7 @@ function AdminPortal() {
         .auth
         .getSession()
         .then(
-          async ({
+          ({
             data
           }) => {
             if (!mounted) {
@@ -201,7 +219,7 @@ function AdminPortal() {
                 ?.user
                 ?.id
             ) {
-              await loadProfile(
+              loadProfile(
                 nextSession
                   .user
                   .id
@@ -209,22 +227,21 @@ function AdminPortal() {
             }
 
 
-            if (mounted) {
-              setLoading(false)
-            }
+            setLoading(false)
           }
         )
 
 
       const {
-        data:
-          listener
+        data: {
+          subscription
+        }
       } =
         supabase
           .auth
           .onAuthStateChange(
-            async (
-              _event,
+            (
+              event,
               nextSession
             ) => {
               setSession(
@@ -233,15 +250,32 @@ function AdminPortal() {
 
 
               if (
+                event ===
+                'PASSWORD_RECOVERY'
+              ) {
+                setRecoveryMode(
+                  true
+                )
+
+                return
+              }
+
+
+              if (
+                event ===
+                'SIGNED_OUT'
+              ) {
+                setProfile(null)
+
+                return
+              }
+
+
+              if (
                 nextSession
                   ?.user
                   ?.id
               ) {
-                /*
-                 * Small delay allows
-                 * signup trigger to
-                 * create profile.
-                 */
                 window.setTimeout(
                   () => {
                     loadProfile(
@@ -250,10 +284,8 @@ function AdminPortal() {
                         .id
                     )
                   },
-                  250
+                  0
                 )
-              } else {
-                setProfile(null)
               }
             }
           )
@@ -262,15 +294,46 @@ function AdminPortal() {
       return () => {
         mounted = false
 
-        listener
-          .subscription
+        subscription
           .unsubscribe()
       }
     },
-    [
-      loadProfile
-    ]
+    [loadProfile]
   )
+
+
+  /*
+   * Recovery is checked before the
+   * normal admin authorization gate.
+   *
+   * Supabase temporarily authenticates
+   * the user when they follow the
+   * recovery link.
+   */
+  if (
+    recoveryMode
+  ) {
+    return (
+      <AdminAuth
+        recoveryMode
+        onRecoveryComplete={() => {
+          setRecoveryMode(
+            false
+          )
+
+          setSession(null)
+          setProfile(null)
+
+          window.history
+            .replaceState(
+              {},
+              '',
+              '/admin'
+            )
+        }}
+      />
+    )
+  }
 
 
   if (
@@ -293,8 +356,7 @@ function AdminPortal() {
 
 
   if (
-    error
-    ||
+    error ||
     !profile
   ) {
     return (
@@ -366,6 +428,7 @@ function AdminPortal() {
       <AdminAccessStatus
         profile={{
           ...profile,
+
           approval_status:
             'revoked'
         }}
