@@ -14,6 +14,7 @@ import CareerPlayerTrigger from '../components/CareerPlayerTrigger'
 import GroupsSection from '../components/GroupsSection'
 import PlayerAssignmentPanel from '../components/PlayerAssignmentPanel'
 import ParticipantAvatar from '../components/ParticipantAvatar'
+import TournamentSettingsSection from '../components/TournamentSettingsSection'
 
 import './TournamentDetails.css'
 
@@ -32,6 +33,11 @@ function TournamentDetails({
     tournament,
     setTournament
   ] = useState(null)
+
+  const [
+    canDeleteTournament,
+    setCanDeleteTournament
+  ] = useState(false)
 
   const [
     players,
@@ -104,215 +110,60 @@ function TournamentDetails({
       setError('')
 
       try {
-        const {
-          data: tournamentData,
-          error: tournamentError
-        } = await supabase
-          .from('tournaments')
-          .select('*')
-          .eq(
-            'id',
-            tournamentId
+        const result =
+          await apiRequest(
+            `/api/tournaments/${tournamentId}/manage`
           )
-          .eq(
-            'owner_id',
-            user.id
+
+
+        if (
+          !result?.tournament
+        ) {
+          throw new Error(
+            'Tournament was not returned by the server.'
           )
-          .single()
-
-        if (tournamentError) {
-          throw tournamentError
         }
 
-        const [
-          playerResult,
-          teamResult,
-          groupResult,
-          groupMemberResult,
-          matchResult
-        ] = await Promise.all([
-          supabase
-            .from('tournament_players')
-            .select(`
-              id,
-              tournament_id,
-              master_player_id,
-              name,
-              image_url,
-              team_id,
-              team_position,
-              created_at
-            `)
-            .eq(
-              'tournament_id',
-              tournamentId
-            )
-            .order(
-              'created_at',
-              {
-                ascending: true
-              }
-            ),
-
-          supabase
-            .from('tournament_teams')
-            .select(`
-              id,
-              tournament_id,
-              name,
-              created_at
-            `)
-            .eq(
-              'tournament_id',
-              tournamentId
-            )
-            .order(
-              'created_at',
-              {
-                ascending: true
-              }
-            ),
-
-          supabase
-            .from('tournament_groups')
-            .select(`
-              id,
-              tournament_id,
-              name,
-              group_order
-            `)
-            .eq(
-              'tournament_id',
-              tournamentId
-            )
-            .order(
-              'group_order',
-              {
-                ascending: true
-              }
-            ),
-
-          supabase
-            .from('tournament_group_members')
-            .select(`
-              id,
-              tournament_id,
-              group_id,
-              player_id,
-              team_id,
-              seed_order
-            `)
-            .eq(
-              'tournament_id',
-              tournamentId
-            )
-            .order(
-              'seed_order',
-              {
-                ascending: true
-              }
-            ),
-
-          supabase
-            .from('matches')
-            .select(`
-              id,
-              tournament_id,
-              group_id,
-              player1_id,
-              player2_id,
-              team1_id,
-              team2_id,
-              player1_score,
-              player2_score,
-              player1_penalty_score,
-              player2_penalty_score,
-              round_number,
-              stage,
-              leg_number,
-              tie_id,
-              next_tie_id,
-              next_slot,
-              match_order,
-              bracket_side,
-              bracket_order,
-              manual_slot1,
-              manual_slot2,
-              winner_player_id,
-              winner_team_id,
-              completed_at,
-              status,
-              created_at
-            `)
-            .eq(
-              'tournament_id',
-              tournamentId
-            )
-            .order(
-              'round_number',
-              {
-                ascending: true
-              }
-            )
-            .order(
-              'match_order',
-              {
-                ascending: true
-              }
-            )
-            .order(
-              'leg_number',
-              {
-                ascending: true
-              }
-            )
-        ])
-
-        if (playerResult.error) {
-          throw playerResult.error
-        }
-
-        if (teamResult.error) {
-          throw teamResult.error
-        }
-
-        if (groupResult.error) {
-          throw groupResult.error
-        }
-
-        if (groupMemberResult.error) {
-          throw groupMemberResult.error
-        }
-
-        if (matchResult.error) {
-          throw matchResult.error
-        }
 
         setTournament(
-          tournamentData
+          result.tournament
         )
 
         setPlayers(
-          playerResult.data || []
+          result.players ||
+          []
         )
 
         setTeams(
-          teamResult.data || []
+          result.teams ||
+          []
         )
 
         setGroups(
-          groupResult.data || []
+          result.groups ||
+          []
         )
 
         setGroupMembers(
-          groupMemberResult.data || []
+          result.groupMembers ||
+          []
         )
 
         setMatches(
-          matchResult.data || []
+          result.matches ||
+          []
+        )
+
+        setCanDeleteTournament(
+          Boolean(
+            result.viewer
+              ?.canDeleteTournament
+          )
         )
       } catch (loadError) {
-        console.error(loadError)
+        console.error(
+          loadError
+        )
 
         setError(
           loadError.message ||
@@ -322,8 +173,7 @@ function TournamentDetails({
         setLoading(false)
       }
     }, [
-      tournamentId,
-      user.id
+      tournamentId
     ])
 
 
@@ -1909,27 +1759,23 @@ function TournamentDetails({
 
 
         {activePage === 'settings' && (
-          <section className="tournament-subpage">
-
-            <div className="subpage-heading">
-              <p className="eyebrow">
-                SETTINGS
-              </p>
-
-              <h2>
-                Tournament Settings
-              </h2>
-
-              <p>
-                Manage tournament information, format, status, and administrative options.
-              </p>
-            </div>
-
-            <div className="subpage-placeholder">
-              Tournament settings will be available here.
-            </div>
-
-          </section>
+          <TournamentSettingsSection
+            tournament={
+              tournament
+            }
+            matches={
+              matches
+            }
+            canDeleteTournament={
+              canDeleteTournament
+            }
+            onChanged={
+              loadTournament
+            }
+            onDeleted={
+              onBack
+            }
+          />
         )}
 
       </div>

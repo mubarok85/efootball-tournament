@@ -14,7 +14,9 @@ import './TournamentSettingsSection.css'
 function TournamentSettingsSection({
   tournament,
   matches,
-  onChanged
+  canDeleteTournament = false,
+  onChanged,
+  onDeleted
 }) {
   const [
     working,
@@ -147,6 +149,73 @@ function TournamentSettingsSection({
       setError(
         requestError.message ||
         'Unable to reset competition.'
+      )
+    } finally {
+      setWorking('')
+    }
+  }
+
+
+  async function deleteTournament() {
+    const confirmation =
+      window.prompt(
+        `PERMANENT TOURNAMENT DELETE
+
+Tournament:
+${tournament.name}
+
+This action cannot be undone.
+
+Type DELETE to permanently remove it.`
+      )
+
+
+    if (
+      confirmation !==
+      'DELETE'
+    ) {
+      return
+    }
+
+
+    setWorking(
+      'delete'
+    )
+
+    setError('')
+    setSuccess('')
+
+
+    try {
+      const result =
+        await apiRequest(
+          `/api/tournaments/${tournament.id}`,
+          {
+            method:
+              'DELETE',
+
+            body:
+              JSON.stringify({
+                confirmation:
+                  'DELETE'
+              })
+          }
+        )
+
+
+      setSuccess(
+        result.message ||
+        'Tournament deleted successfully.'
+      )
+
+
+      if (onDeleted) {
+        onDeleted()
+      }
+    } catch (requestError) {
+      setError(
+        requestError.message ||
+        'Unable to delete tournament.'
       )
     } finally {
       setWorking('')
@@ -304,6 +373,50 @@ function TournamentSettingsSection({
         </button>
 
       </div>
+
+
+      {canDeleteTournament && (
+        <div className="competition-settings-card tournament-delete-danger">
+
+          <div className="competition-setting-copy">
+
+            <span className="danger-zone-label">
+              DANGER ZONE
+            </span>
+
+            <h3>
+              Delete Tournament
+            </h3>
+
+            <p>
+              Permanently delete this tournament and its tournament-specific data. Tournaments containing completed official matches cannot be deleted because their results may already affect Global ELO and player career history.
+            </p>
+
+          </div>
+
+
+          <button
+            type="button"
+            className="delete-tournament-button"
+            disabled={
+              Boolean(
+                working
+              )
+            }
+            onClick={
+              deleteTournament
+            }
+          >
+            {
+              working ===
+              'delete'
+                ? 'Deleting...'
+                : 'Delete Tournament'
+            }
+          </button>
+
+        </div>
+      )}
 
     </section>
   )

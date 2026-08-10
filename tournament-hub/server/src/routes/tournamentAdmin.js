@@ -11,7 +11,56 @@ import {
 } from '../utils/knockout.js'
 
 
+
+import {
+  requirePlatformAdmin
+} from '../middleware/platformAdmin.js'
+
+import {
+  supabaseAdmin
+} from '../lib/supabaseAdmin.js'
+
 const router = Router()
+
+
+/*
+ * PESLOVER TOURNAMENT ADMIN MIDDLEWARE
+ *
+ * Approved:
+ * - super_admin
+ * - admin
+ * - organizer
+ *
+ * platformAdmin middleware verifies the bearer token
+ * and approved administrator profile.
+ */
+router.use(
+  requirePlatformAdmin
+)
+
+
+router.use(
+  (
+    req,
+    _res,
+    next
+  ) => {
+    /*
+     * Administrative database work is executed with
+     * the server-only service-role client.
+     *
+     * Authorization is still explicitly enforced
+     * below before tournament access is granted.
+     */
+    req.supabase =
+      supabaseAdmin
+
+    req.user =
+      req.platformAdmin.user
+
+    next()
+  }
+)
 
 
 const KNOCKOUT_STAGES = [
@@ -24,26 +73,63 @@ const KNOCKOUT_STAGES = [
 ]
 
 
+/*
+ * PESLOVER TOURNAMENT ACCESS POLICY
+ */
+
+function hasPlatformTournamentAccess(
+  role
+) {
+  return (
+    role === 'super_admin'
+    ||
+    role === 'admin'
+  )
+}
+
+
 async function loadTournament(
   supabase,
   tournamentId,
-  userId
+  userId,
+  role = null
 ) {
+  let query =
+    supabase
+      .from('tournaments')
+      .select('*')
+      .eq(
+        'id',
+        tournamentId
+      )
+
+
+  /*
+   * Admin and Super Admin:
+   * any tournament.
+   *
+   * Organizer:
+   * only their own tournament.
+   */
+  if (
+    !hasPlatformTournamentAccess(
+      role
+    )
+  ) {
+    query =
+      query.eq(
+        'owner_id',
+        userId
+      )
+  }
+
+
   const {
     data,
     error
-  } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq(
-      'id',
-      tournamentId
-    )
-    .eq(
-      'owner_id',
-      userId
-    )
-    .single()
+  } =
+    await query
+      .maybeSingle()
 
 
   if (
@@ -56,6 +142,321 @@ async function loadTournament(
 
   return data
 }
+
+
+/*
+ * =====================================================
+ * ADMINISTRATIVE TOURNAMENT VIEW
+ * =====================================================
+ */
+
+router.get(
+  '/:id/manage',
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const {
+        supabase,
+        user
+      } = req
+
+      const role =
+        req
+          .platformAdmin
+          .profile
+          .role
+
+
+      const tournament =
+        await loadTournament(
+          supabase,
+          req.params.id,
+          user.id,
+          role
+        )
+
+
+      if (!tournament) {
+        return res
+          .status(404)
+          .json({
+            message:
+              'Tournament not found or you do not have permission to manage it.'
+          })
+      }
+
+
+      const [
+        playerResult,
+        teamResult,
+        groupResult,
+        memberResult,
+        matchResult
+      ] =
+        await Promise.all([
+
+          supabase
+            .from(
+              'tournament_players'
+            )
+            .select('*')
+            .eq(
+              'tournament_id',
+              tournament.id
+            )
+            .order(
+              'created_at',
+              {
+                ascending: true
+              }
+            ),
+
+          supabase
+            .from(
+              'tournament_teams'
+            )
+            .select('*')
+            .eq(
+              'tournament_id',
+              tournament.id
+            )
+            .order(
+              'created_at',
+              {
+                ascending: true
+              }
+            ),
+
+          supabase
+            .from(
+              'tournament_groups'
+            )
+            .select('*')
+            .eq(
+              'tournament_id',
+              tournament.id
+            )
+            .order(
+              'group_order',
+              {
+                ascending: true
+              }
+            ),
+
+          supabase
+            .from(
+              'tournament_group_members'
+            )
+            .select('*')
+            .eq(
+              'tournament_id',
+              tournament.id
+            )
+            .order(
+              'seed_order',
+              {
+                ascending: true
+              }
+            ),
+
+          supabase
+            .from('matches')
+            .select('*')
+            .eq(
+              'tournament_id',
+              tournament.id
+            )
+            .order(
+              'round_number',
+              {
+                ascending: true
+              }
+            )
+            .order(
+              'match_order',
+              {
+                ascending: true
+              }
+            )
+            .order(
+              'leg_number',
+              {
+                ascending: true
+              }
+            )
+        ])
+
+
+      for (
+        const result
+        of [
+          playerResult,
+          teamResult,
+          groupResult,
+          memberResult,
+          matchResult
+        ]
+      ) {
+        if (result.error) {
+          throw result.error
+        }
+      }
+
+
+      return res.json({
+        tournament,
+
+        players:
+          playerResult.data ||
+          [],
+
+        teams:
+          teamResult.data ||
+          [],
+
+        groups:
+          groupResult.data ||
+          [],
+
+        groupMembers:
+          memberResult.data ||
+          [],
+
+        matches:
+          matchResult.data ||
+          [],
+
+        viewer: {
+          role,
+
+          canDeleteTournament:
+            hasPlatformTournamentAccess(
+              role
+            )
+        }
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
+
+/*
+ * =====================================================
+ * PERMANENT TOURNAMENT DELETION
+ *
+ * Only Admin / Super Admin.
+ * Database deletion itself is atomic through
+ * admin_delete_unplayed_tournament().
+ * =====================================================
+ */
+
+router.delete(
+  '/:id',
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const {
+        supabase,
+        user
+      } = req
+
+      const role =
+        req
+          .platformAdmin
+          .profile
+          .role
+
+
+      if (
+        !hasPlatformTournamentAccess(
+          role
+        )
+      ) {
+        return res
+          .status(403)
+          .json({
+            message:
+              'Only an Admin or Super Admin can delete a tournament.'
+          })
+      }
+
+
+      if (
+        req.body?.confirmation !==
+        'DELETE'
+      ) {
+        return res
+          .status(400)
+          .json({
+            message:
+              'Type DELETE to confirm permanent tournament deletion.'
+          })
+      }
+
+
+      const tournament =
+        await loadTournament(
+          supabase,
+          req.params.id,
+          user.id,
+          role
+        )
+
+
+      if (!tournament) {
+        return res
+          .status(404)
+          .json({
+            message:
+              'Tournament not found.'
+          })
+      }
+
+
+      const {
+        data:
+          deletedTournamentName,
+        error:
+          deleteError
+      } =
+        await supabase
+          .rpc(
+            'admin_delete_unplayed_tournament',
+            {
+              p_tournament_id:
+                tournament.id
+            }
+          )
+
+
+      if (deleteError) {
+        return res
+          .status(409)
+          .json({
+            message:
+              deleteError.message ||
+              'Unable to delete tournament.'
+          })
+      }
+
+
+      return res.json({
+        message:
+          `${deletedTournamentName || tournament.name} was permanently deleted.`
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
 
 
 async function loadParticipants(
@@ -481,7 +882,8 @@ router.patch(
         await loadTournament(
           supabase,
           req.params.id,
-          user.id
+          user.id,
+          req.platformAdmin.profile.role
         )
 
 
@@ -764,7 +1166,8 @@ router.post(
         await loadTournament(
           supabase,
           req.params.id,
-          user.id
+          user.id,
+          req.platformAdmin.profile.role
         )
 
 
@@ -1040,7 +1443,8 @@ router.post(
         await loadTournament(
           supabase,
           req.params.id,
-          user.id
+          user.id,
+          req.platformAdmin.profile.role
         )
 
 
