@@ -22,6 +22,7 @@ import {
 } from '../lib/liveBracketPreview'
 
 import ParticipantAvatar from './ParticipantAvatar'
+import CareerPlayerTrigger from './CareerPlayerTrigger'
 
 import './BracketSection.css'
 
@@ -96,6 +97,31 @@ function BracketSection({
   const participantType =
     tournament
       .participant_type
+
+
+  function globalPlayerIdFor(
+    participantId
+  ) {
+    if (
+      participantType ===
+      'team'
+      ||
+      !participantId
+    ) {
+      return null
+    }
+
+
+    return (
+      players.find(
+        (player) =>
+          player.id ===
+          participantId
+      )?.master_player_id
+      ||
+      null
+    )
+  }
 
 
   const knockoutStages = [
@@ -877,8 +903,11 @@ function BracketSection({
                       participantName
                     }
                     participantImages={
-                      participantImages
-                    }
+                participantImages
+              }
+              globalPlayerIdFor={
+                globalPlayerIdFor
+              }
                     getParticipantId={
                       getParticipantId
                     }
@@ -952,8 +981,11 @@ function BracketSection({
                       participantName
                     }
                     participantImages={
-                      participantImages
-                    }
+                participantImages
+              }
+              globalPlayerIdFor={
+                globalPlayerIdFor
+              }
                     getParticipantId={
                       getParticipantId
                     }
@@ -992,8 +1024,11 @@ function BracketSection({
                       participantName
                     }
                     participantImages={
-                      participantImages
-                    }
+                participantImages
+              }
+              globalPlayerIdFor={
+                globalPlayerIdFor
+              }
                     getParticipantId={
                       getParticipantId
                     }
@@ -1043,8 +1078,11 @@ function BracketSection({
                         participantName
                       }
                       participantImages={
-                        participantImages
-                      }
+                participantImages
+              }
+              globalPlayerIdFor={
+                globalPlayerIdFor
+              }
                       getParticipantId={
                         getParticipantId
                       }
@@ -1126,6 +1164,7 @@ function BracketRound({
   ties,
   participantName,
   participantImages,
+  globalPlayerIdFor,
   getParticipantId,
   aggregateScores,
   winnerId,
@@ -1161,6 +1200,9 @@ function BracketRound({
               participantImages={
                 participantImages
               }
+              globalPlayerIdFor={
+                globalPlayerIdFor
+              }
               getParticipantId={
                 getParticipantId
               }
@@ -1188,6 +1230,7 @@ function BracketTie({
   tie,
   participantName,
   participantImages,
+  globalPlayerIdFor,
   getParticipantId,
   aggregateScores,
   winnerId,
@@ -1308,6 +1351,11 @@ function BracketTie({
             firstId
           )
         }
+        globalPlayerId={
+          globalPlayerIdFor(
+            firstId
+          )
+        }
         score={
           completed &&
           firstId
@@ -1360,6 +1408,11 @@ function BracketTie({
             secondId
           )
         }
+        globalPlayerId={
+          globalPlayerIdFor(
+            secondId
+          )
+        }
         score={
           completed &&
           secondId
@@ -1407,6 +1460,7 @@ function BracketSlot({
   participantId,
   name,
   images = [],
+  globalPlayerId,
   score,
   winner,
   locked,
@@ -1517,15 +1571,29 @@ function BracketSlot({
       {
         participantId
           ? (
-            <ParticipantAvatar
-              name={
+            <CareerPlayerTrigger
+              as="span"
+              className="premium-bracket-career-trigger"
+              globalPlayerId={
+                globalPlayerId
+              }
+              stopPointerDown
+              title={
                 name
+                  ? `View ${name} career`
+                  : 'View player career'
               }
-              imageUrls={
-                images
-              }
-              size="sm"
-            />
+            >
+              <ParticipantAvatar
+                name={
+                  name
+                }
+                imageUrls={
+                  images
+                }
+                size="sm"
+              />
+            </CareerPlayerTrigger>
           )
           : (
             <span className="premium-avatar-placeholder" />

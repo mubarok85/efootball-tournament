@@ -10,6 +10,7 @@ import { apiRequest } from '../lib/api'
 import MatchResultEditor from '../components/MatchResultEditor'
 import StandingsSection from '../components/StandingsSection'
 import BracketSection from '../components/BracketSection'
+import CareerPlayerTrigger from '../components/CareerPlayerTrigger'
 import GroupsSection from '../components/GroupsSection'
 import PlayerAssignmentPanel from '../components/PlayerAssignmentPanel'
 import ParticipantAvatar from '../components/ParticipantAvatar'
@@ -1662,7 +1663,28 @@ function TournamentDetails({
 
                             <div className="fixture-matchup">
 
-                              <div className="fixture-participant home">
+                              <CareerPlayerTrigger
+                                className="fixture-participant home fixture-career-home"
+                                globalPlayerId={
+                                  tournament.participant_type ===
+                                  'team'
+                                    ? null
+                                    : (
+                                        players.find(
+                                          (player) =>
+                                            player.id ===
+                                            match.player1_id
+                                        )?.master_player_id ||
+                                        null
+                                      )
+                                }
+                                title={
+                                  `View ${getParticipantName(
+                                    match,
+                                    1
+                                  )} career`
+                                }
+                              >
 
                                 <ParticipantAvatar
                                   name={
@@ -1707,7 +1729,8 @@ function TournamentDetails({
                                   }
                                 </strong>
 
-                              </div>
+                              
+                              </CareerPlayerTrigger>
 
                               <div className="fixture-score">
                                 <span className="versus">
@@ -1715,7 +1738,28 @@ function TournamentDetails({
                                 </span>
                               </div>
 
-                              <div className="fixture-participant away">
+                              <CareerPlayerTrigger
+                                className="fixture-participant away fixture-career-away"
+                                globalPlayerId={
+                                  tournament.participant_type ===
+                                  'team'
+                                    ? null
+                                    : (
+                                        players.find(
+                                          (player) =>
+                                            player.id ===
+                                            match.player2_id
+                                        )?.master_player_id ||
+                                        null
+                                      )
+                                }
+                                title={
+                                  `View ${getParticipantName(
+                                    match,
+                                    2
+                                  )} career`
+                                }
+                              >
 
                                 <ParticipantAvatar
                                   name={
@@ -1760,7 +1804,8 @@ function TournamentDetails({
                                   }
                                 </strong>
 
-                              </div>
+                              
+                              </CareerPlayerTrigger>
 
                             </div>
 

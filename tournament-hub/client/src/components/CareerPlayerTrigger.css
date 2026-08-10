@@ -1,0 +1,51 @@
+.career-player-trigger {
+  cursor: pointer;
+}
+
+.career-player-trigger:focus-visible {
+  outline: 2px solid #fc631d;
+  outline-offset: 3px;
+}
+
+
+/* Fixtures */
+
+.fixture-participant.career-player-trigger {
+  border-radius: 10px;
+
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.fixture-participant.career-player-trigger:hover {
+  background: #fff1ea;
+
+  transform: translateY(-1px);
+}
+
+.fixture-participant.career-player-trigger:hover strong {
+  color: #e45712;
+}
+
+
+/* Premium bracket */
+
+.premium-bracket-career-trigger {
+  display: inline-flex;
+  align-items: center;
+
+  border-radius: 50%;
+
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.premium-bracket-career-trigger:hover {
+  transform: scale(1.05);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(252, 99, 29, 0.22);
+}
