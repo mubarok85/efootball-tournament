@@ -7,7 +7,6 @@ import { requireAuth } from './middleware/auth.js'
 import tournamentRoutes from './routes/tournaments.js'
 import tournamentAdminRoutes from './routes/tournamentAdmin.js'
 import matchRoutes from './routes/matches.js'
-
 import playerAccountsRouter from './routes/playerAccounts.js'
 
 const app = express()
@@ -62,6 +61,11 @@ app.use(
 )
 
 app.use(
+  '/api/player-accounts',
+  playerAccountsRouter
+)
+
+app.use(
   (
     error,
     req,
@@ -79,7 +83,5 @@ app.use(
       })
   }
 )
-
-app.use('/api/player-accounts', playerAccountsRouter)
 
 export default app
