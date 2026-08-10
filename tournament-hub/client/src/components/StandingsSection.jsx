@@ -1,5 +1,6 @@
 import {
-  useMemo
+  useMemo,
+  useState
 } from 'react'
 
 import {
@@ -7,6 +8,7 @@ import {
 } from '../lib/standings'
 
 import ParticipantAvatar from './ParticipantAvatar'
+import GlobalPlayerProfileModal from './GlobalPlayerProfileModal'
 
 import './StandingsSection.css'
 
@@ -21,6 +23,11 @@ function StandingsSection({
 }) {
   const participantType =
     tournament.participant_type
+
+  const [
+    careerPlayerId,
+    setCareerPlayerId
+  ] = useState(null)
 
 
   const isGroupFormat =
@@ -314,6 +321,15 @@ function StandingsSection({
           qualificationCutoff={
             leagueCutoff
           }
+          participantType={
+            participantType
+          }
+          players={
+            players
+          }
+          onOpenCareer={
+            setCareerPlayerId
+          }
         />
       )}
 
@@ -357,6 +373,15 @@ function StandingsSection({
                   qualificationCutoff={
                     groupCutoff
                   }
+                  participantType={
+                    participantType
+                  }
+                  players={
+                    players
+                  }
+                  onOpenCareer={
+                    setCareerPlayerId
+                  }
                 />
 
               </div>
@@ -366,6 +391,20 @@ function StandingsSection({
         </div>
       )}
 
+
+      {careerPlayerId && (
+        <GlobalPlayerProfileModal
+          playerId={
+            careerPlayerId
+          }
+          onClose={() =>
+            setCareerPlayerId(
+              null
+            )
+          }
+        />
+      )}
+
     </section>
   )
 }
@@ -373,7 +412,10 @@ function StandingsSection({
 
 function StandingsTable({
   standings,
-  qualificationCutoff = null
+  qualificationCutoff = null,
+  participantType,
+  players,
+  onOpenCareer
 }) {
   return (
     <div className="standings-table-wrap">
@@ -436,6 +478,23 @@ function StandingsTable({
                   qualificationCutoff
 
 
+              const tournamentPlayer =
+                participantType ===
+                'team'
+                  ? null
+                  : players.find(
+                      (player) =>
+                        player.id ===
+                        row.id
+                    )
+
+
+              const globalPlayerId =
+                tournamentPlayer
+                  ?.master_player_id ||
+                null
+
+
               return (
                 <tr key={row.id}>
 
@@ -455,7 +514,60 @@ function StandingsTable({
 
 
                   <td>
-                    <div className="standing-participant">
+                    <div
+                      className={
+                        globalPlayerId
+                          ? 'standing-participant standing-career-link'
+                          : 'standing-participant'
+                      }
+                      role={
+                        globalPlayerId
+                          ? 'button'
+                          : undefined
+                      }
+                      tabIndex={
+                        globalPlayerId
+                          ? 0
+                          : undefined
+                      }
+                      title={
+                        globalPlayerId
+                          ? `View ${row.name} career`
+                          : undefined
+                      }
+                      onClick={() => {
+                        if (
+                          globalPlayerId
+                        ) {
+                          onOpenCareer(
+                            globalPlayerId
+                          )
+                        }
+                      }}
+                      onKeyDown={
+                        (event) => {
+                          if (
+                            !globalPlayerId
+                          ) {
+                            return
+                          }
+
+                          if (
+                            event.key ===
+                              'Enter'
+                            ||
+                            event.key ===
+                              ' '
+                          ) {
+                            event.preventDefault()
+
+                            onOpenCareer(
+                              globalPlayerId
+                            )
+                          }
+                        }
+                      }
+                    >
 
                       {qualificationCutoff && (
                         <span
