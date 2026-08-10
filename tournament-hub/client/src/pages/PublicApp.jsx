@@ -13,6 +13,9 @@ import {
 import PublicTournamentPage from './PublicTournamentPage'
 import ParticipantAvatar from '../components/ParticipantAvatar'
 
+import GlobalRankingsSection from '../components/GlobalRankingsSection'
+import PlayerAccountPortal from '../components/PlayerAccountPortal'
+
 import './PublicApp.css'
 
 
@@ -1692,7 +1695,13 @@ function PublicApp() {
       </section>
 
 
-      <section
+      
+      <GlobalRankingsSection />
+
+      <PlayerAccountPortal />
+
+
+<section
         ref={playersRef}
         className="public-home-section section-anchor"
       >

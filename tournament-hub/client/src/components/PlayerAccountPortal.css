@@ -1,0 +1,515 @@
+.player-account-button {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 900;
+
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 7px 15px 7px 8px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 999px;
+
+  background: #ffffff;
+  color: #111827;
+
+  box-shadow:
+    0 14px 40px
+    rgba(17, 24, 39, 0.14);
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.player-account-button:hover {
+  border-color: #fc631d;
+
+  transform:
+    translateY(-1px);
+}
+
+
+.player-account-button img,
+.account-letter,
+.account-icon {
+  width: 32px;
+  height: 32px;
+
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fc631d,
+      #ff8a3d
+    );
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+.player-account-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+
+  display: grid;
+  place-items: center;
+
+  padding: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.65);
+
+  backdrop-filter:
+    blur(8px);
+}
+
+
+.player-account-box {
+  position: relative;
+
+  width:
+    min(
+      470px,
+      100%
+    );
+
+  max-height:
+    calc(100vh - 40px);
+
+  overflow-y: auto;
+
+  padding: 30px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      155deg,
+      #ffffff,
+      #fff8f4
+    );
+
+  box-shadow:
+    0 30px 80px
+    rgba(0, 0, 0, 0.25);
+}
+
+
+.account-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: #fff1ea;
+  color: #e45712;
+
+  font-size: 20px;
+
+  cursor: pointer;
+}
+
+
+.account-heading > span {
+  color: #fc631d;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.12em;
+}
+
+
+.account-heading h2 {
+  margin: 7px 0;
+
+  color: #111827;
+
+  font-size: 25px;
+  font-weight: 800;
+
+  letter-spacing: -0.04em;
+}
+
+
+.account-heading p {
+  margin: 0 0 22px;
+
+  color: #64748b;
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+
+.account-form {
+  display: grid;
+  gap: 14px;
+}
+
+
+.account-form label {
+  display: grid;
+  gap: 6px;
+
+  color: #374151;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.account-form input {
+  width: 100%;
+  min-height: 44px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 10px;
+
+  outline: none;
+
+  background: #ffffff;
+  color: #111827;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+.account-form input:focus {
+  border-color: #fc631d;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(252, 99, 29, 0.10);
+}
+
+
+.account-form input:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+
+.account-primary {
+  min-height: 44px;
+
+  padding: 0 16px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fc631d,
+      #e45712
+    );
+
+  color: #ffffff;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.account-primary:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      135deg,
+      #e45712,
+      #d94d0e
+    );
+}
+
+
+.account-primary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+
+.account-link {
+  border: 0;
+
+  background: transparent;
+  color: #e45712;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.account-error,
+.account-success {
+  margin-bottom: 15px;
+
+  padding: 11px 12px;
+
+  border-radius: 9px;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  line-height: 1.5;
+}
+
+
+.account-error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+
+.account-success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+
+.account-pending {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+
+  padding: 18px 0;
+
+  text-align: center;
+}
+
+
+.account-pending > span {
+  width: 55px;
+  height: 55px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #fff1ea;
+  color: #fc631d;
+
+  font-size: 23px;
+  font-weight: 900;
+}
+
+
+.account-pending h3 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 17px;
+}
+
+
+.account-pending p {
+  max-width: 330px;
+
+  margin: 0 0 8px;
+
+  color: #64748b;
+
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+
+.player-profile-content {
+  display: grid;
+  gap: 20px;
+}
+
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 14px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 14px;
+
+  background: #fff8f4;
+}
+
+
+.profile-photo {
+  position: relative;
+
+  width: 72px;
+  height: 72px;
+
+  flex: 0 0 auto;
+
+  display: grid;
+  place-items: center;
+
+  overflow: hidden;
+
+  border: 3px solid #fc631d;
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  cursor: pointer;
+}
+
+
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+
+.profile-photo > span {
+  color: #fc631d;
+
+  font-size: 24px;
+  font-weight: 900;
+}
+
+
+.profile-photo input {
+  display: none;
+}
+
+
+.profile-photo small {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  padding: 4px 2px;
+
+  background:
+    rgba(17, 24, 39, 0.74);
+
+  color: #ffffff;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+
+.profile-summary > div {
+  min-width: 0;
+
+  display: grid;
+  gap: 3px;
+}
+
+
+.profile-summary strong {
+  overflow: hidden;
+
+  color: #111827;
+
+  font-size: 16px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+}
+
+
+.profile-summary span {
+  color: #e45712;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.profile-summary small {
+  color: #16a34a;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+.account-logout {
+  min-height: 40px;
+
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #b91c1c;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.account-logout:hover {
+  background: #fff5f5;
+}
+
+
+@media (max-width: 560px) {
+  .player-account-button {
+    right: 14px;
+    bottom: 14px;
+  }
+
+
+  .player-account-box {
+    padding: 25px 18px;
+  }
+
+
+  .profile-summary {
+    align-items: flex-start;
+  }
+}

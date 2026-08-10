@@ -1,0 +1,19 @@
+services:
+  player-db:
+    image: postgres:16-alpine
+    container_name: peslover-player-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: peslover_accounts
+      POSTGRES_USER: peslover
+      POSTGRES_PASSWORD: peslover_local_dev
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - peslover_player_db:/var/lib/postgresql/data
+
+volumes:
+  peslover_player_db:

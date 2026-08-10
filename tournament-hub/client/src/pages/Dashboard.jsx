@@ -7,6 +7,7 @@ import {
 import { supabase } from '../lib/supabase'
 import CreateTournamentWizard from '../components/CreateTournamentWizard'
 import TournamentDetails from './TournamentDetails'
+import PlayerAccountRequests from '../components/PlayerAccountRequests'
 
 import './Dashboard.css'
 
@@ -375,6 +376,9 @@ function Dashboard({ user }) {
           </strong>
         </div>
       </section>
+
+      <PlayerAccountRequests />
+
 
       {error && (
         <div className="dashboard-error">
