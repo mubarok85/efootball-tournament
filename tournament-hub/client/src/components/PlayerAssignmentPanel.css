@@ -728,3 +728,30 @@
     align-self: center;
   }
 }
+
+
+/* Tournament career profile action */
+
+.assignment-view-career {
+  min-height: 32px !important;
+
+  padding: 0 10px !important;
+
+  border: 1px solid #f1c8b7 !important;
+  border-radius: 7px !important;
+
+  background: #ffffff !important;
+  color: #e45712 !important;
+
+  font-size: 8px !important;
+  font-weight: 800 !important;
+
+  cursor: pointer;
+}
+
+.assignment-view-career:hover {
+  border-color: #fc631d !important;
+
+  background: #fff1ea !important;
+  color: #e45712 !important;
+}

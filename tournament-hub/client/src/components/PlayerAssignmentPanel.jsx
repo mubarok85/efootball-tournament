@@ -9,6 +9,8 @@ import {
   supabase
 } from '../lib/supabase'
 
+import GlobalPlayerProfileModal from './GlobalPlayerProfileModal'
+
 import './PlayerAssignmentPanel.css'
 
 
@@ -426,6 +428,11 @@ function PlayerAssignmentPanel({
     success,
     setSuccess
   ] = useState('')
+
+  const [
+    careerPlayerId,
+    setCareerPlayerId
+  ] = useState(null)
 
 
   const locked =
@@ -1269,6 +1276,19 @@ function PlayerAssignmentPanel({
 
                         <button
                           type="button"
+                          className="assignment-view-career"
+                          onClick={() =>
+                            setCareerPlayerId(
+                              player.id
+                            )
+                          }
+                        >
+                          View Career
+                        </button>
+
+
+                        <button
+                          type="button"
                           disabled={
                             locked ||
                             assigned ||
@@ -1308,6 +1328,17 @@ function PlayerAssignmentPanel({
           )}
 
         </div>
+      )}
+
+      {careerPlayerId && (
+        <GlobalPlayerProfileModal
+          playerId={careerPlayerId}
+          onClose={() =>
+            setCareerPlayerId(
+              null
+            )
+          }
+        />
       )}
 
     </div>
