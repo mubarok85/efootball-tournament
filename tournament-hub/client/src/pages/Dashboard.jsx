@@ -304,19 +304,7 @@ function Dashboard({ user }) {
           </h1>
         </div>
 
-        <div className="user-area">
-          <span>
-            {user.email}
-          </span>
 
-          <button
-            type="button"
-            className="logout-button"
-            onClick={logout}
-          >
-            Logout
-          </button>
-        </div>
       </header>
 
       <section className="welcome-card">
