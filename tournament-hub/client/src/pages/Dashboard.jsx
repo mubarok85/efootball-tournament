@@ -75,65 +75,86 @@ function Dashboard({ user }) {
               tournament.id
           )
 
-        let totalPlayers = 0
-        let matchesPlayed = 0
+
+        /*
+         * Player Library is GLOBAL
+         * across approved administrators.
+         *
+         * RLS determines whether the
+         * authenticated account can read it.
+         */
+        const {
+          count:
+            totalPlayers,
+          error:
+            playerLibraryError
+        } = await supabase
+          .from('players')
+          .select(
+            'id',
+            {
+              count: 'exact',
+              head: true
+            }
+          )
+
 
         if (
-          tournamentIds.length > 0
+          playerLibraryError
         ) {
-          const [
-            playerResult,
-            matchResult
-          ] = await Promise.all([
-            supabase
-              .from(
-                'tournament_players'
-              )
-              .select(
-                'id',
-                {
-                  count: 'exact',
-                  head: true
-                }
-              )
-              .in(
-                'tournament_id',
-                tournamentIds
-              ),
+          throw playerLibraryError
+        }
 
-            supabase
-              .from('matches')
-              .select(
-                'id',
-                {
-                  count: 'exact',
-                  head: true
-                }
-              )
-              .in(
-                'tournament_id',
-                tournamentIds
-              )
-              .eq(
-                'status',
-                'completed'
-              )
-          ])
 
-          if (playerResult.error) {
-            throw playerResult.error
+        let matchesPlayed = 0
+
+
+        /*
+         * Matches Played remains related
+         * to tournaments owned by the
+         * current regular administrator.
+         */
+        if (
+          tournamentIds.length >
+          0
+        ) {
+          const {
+            count:
+              completedMatchCount,
+            error:
+              matchError
+          } = await supabase
+            .from('matches')
+            .select(
+              'id',
+              {
+                count: 'exact',
+                head: true
+              }
+            )
+            .in(
+              'tournament_id',
+              tournamentIds
+            )
+            .eq(
+              'status',
+              'completed'
+            )
+
+
+          if (
+            matchError
+          ) {
+            throw matchError
           }
 
-          if (matchResult.error) {
-            throw matchResult.error
-          }
-
-          totalPlayers =
-            playerResult.count || 0
 
           matchesPlayed =
-            matchResult.count || 0
+            completedMatchCount
+            ||
+            0
         }
+
 
         setStats({
           activeTournaments:
@@ -162,6 +183,47 @@ function Dashboard({ user }) {
   useEffect(() => {
     loadDashboard()
   }, [loadDashboard])
+
+
+  /*
+   * Update Total Players automatically
+   * when any approved administrator
+   * changes the shared Player Library.
+   */
+  useEffect(
+    () => {
+      const channel =
+        supabase
+          .channel(
+            `dashboard-player-count-${user.id}`
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'players'
+            },
+            () => {
+              loadDashboard()
+            }
+          )
+          .subscribe()
+
+
+      return () => {
+        supabase
+          .removeChannel(
+            channel
+          )
+      }
+    },
+    [
+      user.id,
+      loadDashboard
+    ]
+  )
+
 
   async function logout() {
     await supabase.auth.signOut()

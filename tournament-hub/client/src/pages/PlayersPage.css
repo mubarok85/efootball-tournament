@@ -432,3 +432,21 @@
 .delete-global-player:hover {
   background: #fff1ec;
 }
+
+
+/* Shared Player Library */
+
+.shared-player-badge {
+  padding: 5px 9px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 999px;
+
+  background: #fff8f4;
+  color: #e45712;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}

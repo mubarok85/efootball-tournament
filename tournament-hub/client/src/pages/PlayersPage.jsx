@@ -61,6 +61,11 @@ function PlayersPage({
     setSuccess
   ] = useState('')
 
+  const [
+    isSuperAdmin,
+    setIsSuperAdmin
+  ] = useState(false)
+
 
   const loadPlayers =
     useCallback(
@@ -81,10 +86,6 @@ function PlayersPage({
             image_path,
             created_at
           `)
-          .eq(
-            'owner_id',
-            user.id
-          )
           .order(
             'name',
             {
@@ -109,11 +110,99 @@ function PlayersPage({
     )
 
 
+  const loadAdminRole =
+    useCallback(
+      async () => {
+        const {
+          data,
+          error:
+            profileError
+        } = await supabase
+          .from('profiles')
+          .select(`
+            role,
+            approval_status
+          `)
+          .eq(
+            'id',
+            user.id
+          )
+          .maybeSingle()
+
+
+        if (profileError) {
+          console.error(
+            'Unable to load administrator role:',
+            profileError
+          )
+
+          setIsSuperAdmin(false)
+
+          return
+        }
+
+
+        setIsSuperAdmin(
+          data?.role ===
+          'super_admin'
+          &&
+          data?.approval_status ===
+          'approved'
+        )
+      },
+      [user.id]
+    )
+
+
   useEffect(
     () => {
       loadPlayers()
+      loadAdminRole()
     },
-    [loadPlayers]
+    [
+      loadPlayers,
+      loadAdminRole
+    ]
+  )
+
+
+  /*
+   * Keep the shared Player Library
+   * synchronized if another admin
+   * creates, edits or deletes a player.
+   */
+  useEffect(
+    () => {
+      const channel =
+        supabase
+          .channel(
+            `shared-player-library-${user.id}`
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'players'
+            },
+            () => {
+              loadPlayers()
+            }
+          )
+          .subscribe()
+
+
+      return () => {
+        supabase
+          .removeChannel(
+            channel
+          )
+      }
+    },
+    [
+      user.id,
+      loadPlayers
+    ]
   )
 
 
@@ -602,33 +691,48 @@ function PlayersPage({
                     </div>
 
 
-                    <div className="global-player-actions">
+                    {
+                      (
+                        player.owner_id ===
+                        user.id
+                        ||
+                        isSuperAdmin
+                      )
+                        ? (
+                          <div className="global-player-actions">
 
-                      <button
-                        type="button"
-                        className="edit-global-player"
-                        onClick={() =>
-                          setEditingPlayer(
-                            player
-                          )
-                        }
-                      >
-                        Edit
-                      </button>
+                            <button
+                              type="button"
+                              className="edit-global-player"
+                              onClick={() =>
+                                setEditingPlayer(
+                                  player
+                                )
+                              }
+                            >
+                              Edit
+                            </button>
 
-                      <button
-                        type="button"
-                        className="delete-global-player"
-                        onClick={() =>
-                          deletePlayer(
-                            player
-                          )
-                        }
-                      >
-                        Delete
-                      </button>
+                            <button
+                              type="button"
+                              className="delete-global-player"
+                              onClick={() =>
+                                deletePlayer(
+                                  player
+                                )
+                              }
+                            >
+                              Delete
+                            </button>
 
-                    </div>
+                          </div>
+                        )
+                        : (
+                          <span className="shared-player-badge">
+                            Shared Player
+                          </span>
+                        )
+                    }
 
                   </article>
                 )
