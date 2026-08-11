@@ -1,0 +1,480 @@
+.player-home {
+  background: #fff;
+  color: #171717;
+  scroll-margin-top: 90px;
+}
+
+.player-home-container {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 64px 0;
+}
+
+.player-home-block {
+  margin-top: 52px;
+  scroll-margin-top: 100px;
+}
+
+.player-home-state {
+  padding: 22px;
+  border: 1px solid #f1c8b7;
+  border-radius: 16px;
+  background: #fff8f5;
+  color: #5c4034;
+}
+
+.player-home-state.error {
+  border-color: #e8a28a;
+}
+
+.player-home-state strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.player-home-state p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.player-home-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 34px;
+  border: 1px solid #f1c8b7;
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      135deg,
+      #fff 0%,
+      #fff6f1 100%
+    );
+  box-shadow:
+    0 18px 50px
+    rgba(137, 56, 19, 0.08);
+}
+
+.player-home-eyebrow,
+.player-block-heading > span {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #fc631d;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.player-home-welcome h1 {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.08;
+}
+
+.player-home-welcome p {
+  max-width: 620px;
+  margin: 12px 0 0;
+  color: #715d54;
+  line-height: 1.7;
+}
+
+.player-home-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.player-home-metrics > div {
+  min-width: 105px;
+  padding: 18px 14px;
+  border: 1px solid #f1c8b7;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+}
+
+.player-home-metrics strong {
+  display: block;
+  color: #fc631d;
+  font-size: 26px;
+}
+
+.player-home-metrics span {
+  display: block;
+  margin-top: 4px;
+  color: #80675c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.player-block-heading {
+  margin-bottom: 22px;
+}
+
+.player-block-heading h2 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 36px);
+}
+
+.player-block-heading p {
+  margin: 8px 0 0;
+  color: #78635a;
+  line-height: 1.6;
+}
+
+.player-next-match-card {
+  padding: 28px;
+  border: 1px solid #f1c8b7;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow:
+    0 14px 35px
+    rgba(137, 56, 19, 0.07);
+}
+
+.player-next-match-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.player-next-match-meta span {
+  color: #80675c;
+}
+
+.player-next-match-versus {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+  font-size: 20px;
+}
+
+.player-next-match-versus strong:last-child {
+  text-align: right;
+}
+
+.player-next-match-versus > span {
+  color: #fc631d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.current-player {
+  color: #fc631d;
+}
+
+.player-next-match-card button,
+.player-tournament-card button {
+  margin-top: 24px;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #fc631d;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.player-next-match-card button:hover,
+.player-tournament-card button:hover {
+  background: #e45712;
+}
+
+.player-tournament-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+.player-tournament-card {
+  padding: 22px;
+  border: 1px solid #f1c8b7;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.player-tournament-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.player-tournament-logo {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f9dcd1;
+  color: #fc631d;
+  font-weight: 800;
+}
+
+.player-tournament-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-tournament-status {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff0e9;
+  color: #e45712;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.player-tournament-card h3 {
+  margin: 18px 0 6px;
+  font-size: 20px;
+}
+
+.player-tournament-card > p {
+  margin: 0;
+  color: #80675c;
+}
+
+.player-tournament-stats {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.player-tournament-stats > div {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fff7f3;
+}
+
+.player-tournament-stats span {
+  display: block;
+  color: #93776a;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.player-tournament-stats strong {
+  display: block;
+  margin-top: 4px;
+}
+
+.player-match-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.player-match-column {
+  min-width: 0;
+}
+
+.player-match-column-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.player-match-column-heading span {
+  color: #fc631d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.player-match-column-heading h3 {
+  margin: 3px 0 0;
+}
+
+.player-match-column-heading > strong {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff0e9;
+  color: #fc631d;
+}
+
+.player-match-list {
+  display: grid;
+  gap: 12px;
+}
+
+.player-match-card {
+  position: relative;
+  padding: 18px;
+  border: 1px solid #f1c8b7;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.player-match-card-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.player-match-card-meta span {
+  color: #8c7469;
+}
+
+.player-match-card-versus {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.player-match-card-versus > strong:last-child {
+  text-align: right;
+}
+
+.player-match-score {
+  display: flex;
+  gap: 7px;
+  color: #171717;
+  font-size: 19px;
+}
+
+.player-match-vs {
+  color: #fc631d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.player-match-result {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.player-match-result.result-w {
+  background: #e9f7ef;
+  color: #18864b;
+}
+
+.player-match-result.result-d {
+  background: #fff4d8;
+  color: #8c6811;
+}
+
+.player-match-result.result-l {
+  background: #fdecec;
+  color: #b63434;
+}
+
+.player-standings-select {
+  width: min(100%, 360px);
+  margin-bottom: 18px;
+  padding: 11px 12px;
+  border: 1px solid #f1c8b7;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.player-standings-wrap {
+  overflow-x: auto;
+  border: 1px solid #f1c8b7;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.player-standings-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.player-standings-table th,
+.player-standings-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #f6e1d8;
+  text-align: center;
+}
+
+.player-standings-table th:nth-child(2),
+.player-standings-table td:nth-child(2) {
+  text-align: left;
+}
+
+.player-standings-table th {
+  background: #fff7f3;
+  color: #755d52;
+  font-size: 11px;
+}
+
+.player-standings-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.player-standings-table .current-player-row {
+  background: #fff1ea;
+}
+
+.player-you-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: #fc631d;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+@media (max-width: 800px) {
+  .player-home-container {
+    width: min(100% - 24px, 1180px);
+    padding: 42px 0;
+  }
+
+  .player-home-welcome {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .player-home-metrics {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .player-home-metrics > div {
+    min-width: 0;
+  }
+
+  .player-match-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .player-home-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .player-next-match-meta {
+    flex-direction: column;
+  }
+
+  .player-next-match-versus {
+    font-size: 15px;
+  }
+
+  .player-tournament-stats {
+    flex-direction: column;
+  }
+}

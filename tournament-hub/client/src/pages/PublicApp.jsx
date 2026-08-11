@@ -15,6 +15,8 @@ import ParticipantAvatar from '../components/ParticipantAvatar'
 
 import GlobalRankingsSection from '../components/GlobalRankingsSection'
 import PlayerAccountPortal from '../components/PlayerAccountPortal'
+import PlayerHomeExperience from '../components/PlayerHomeExperience'
+import PlayerNavbarLinks from '../components/PlayerNavbarLinks'
 
 import './PublicApp.css'
 
@@ -1696,6 +1698,8 @@ function PublicApp() {
 
 
       
+      <PlayerHomeExperience />
+
       <GlobalRankingsSection />
 
       <PlayerAccountPortal />
@@ -2018,6 +2022,8 @@ function PublicNavbar({
           >
             Teams
           </button>
+
+          <PlayerNavbarLinks />
 
         </nav>
 
