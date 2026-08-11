@@ -1791,4 +1791,175 @@ router.post(
 )
 
 
+
+/*
+ * =====================================================
+ * PERMANENT GLOBAL PLAYER DELETION
+ *
+ * Admin / Super Admin only.
+ *
+ * Database cleanup is performed atomically by
+ * admin_permanently_delete_player().
+ * =====================================================
+ */
+router.delete(
+  '/admin/global-players/:id',
+  requirePlatformAdmin,
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const role =
+        req
+          .platformAdmin
+          ?.profile
+          ?.role
+
+      if (
+        ![
+          'admin',
+          'super_admin'
+        ].includes(
+          role
+        )
+      ) {
+        return res
+          .status(403)
+          .json({
+            message:
+              'Only an Admin or Super Admin can permanently delete a player.'
+          })
+      }
+
+      if (
+        req.body
+          ?.confirmation !==
+        'DELETE'
+      ) {
+        return res
+          .status(400)
+          .json({
+            message:
+              'Type DELETE to confirm permanent player deletion.'
+          })
+      }
+
+      const playerId =
+        String(
+          req.params.id ||
+          ''
+        ).trim()
+
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+      if (
+        !uuidPattern.test(
+          playerId
+        )
+      ) {
+        return res
+          .status(400)
+          .json({
+            message:
+              'Invalid player ID.'
+          })
+      }
+
+      const {
+        supabase
+      } = req
+
+      if (!supabase) {
+        throw new Error(
+          'Admin database client is unavailable.'
+        )
+      }
+
+      const {
+        data,
+        error:
+          deleteError
+      } =
+        await supabase
+          .rpc(
+            'admin_permanently_delete_player',
+            {
+              p_player_id:
+                playerId
+            }
+          )
+
+      if (deleteError) {
+        const message =
+          deleteError.message ||
+          'Unable to permanently delete player.'
+
+        const status =
+          message.includes(
+            'Player not found'
+          )
+            ? 404
+            : 409
+
+        return res
+          .status(status)
+          .json({
+            message
+          })
+      }
+
+      /*
+       * Database deletion is already committed.
+       * Remove the optional Storage image afterwards.
+       * Storage cleanup does not affect DB integrity.
+       */
+      let imageCleanupFailed =
+        false
+
+      if (
+        data?.image_path
+      ) {
+        const {
+          error:
+            imageError
+        } =
+          await supabase
+            .storage
+            .from(
+              'player-images'
+            )
+            .remove([
+              data.image_path
+            ])
+
+        if (imageError) {
+          imageCleanupFailed =
+            true
+
+          console.error(
+            'Unable to remove deleted player image:',
+            imageError
+          )
+        }
+      }
+
+      return res.json({
+        message:
+          `${data?.player_name || 'Player'} was permanently deleted.`,
+
+        deletion:
+          data,
+
+        image_cleanup_failed:
+          imageCleanupFailed
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
 export default router

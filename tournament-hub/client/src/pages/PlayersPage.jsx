@@ -8,6 +8,8 @@ import {
   supabase
 } from '../lib/supabase'
 
+import { apiRequest } from '../lib/api'
+
 import EditPlayerModal from '../components/EditPlayerModal'
 
 import './PlayersPage.css'
@@ -60,6 +62,11 @@ function PlayersPage({
     success,
     setSuccess
   ] = useState('')
+
+  const [
+    deletingPlayerId,
+    setDeletingPlayerId
+  ] = useState(null)
 
   const [
     isSuperAdmin,
@@ -411,62 +418,84 @@ function PlayersPage({
   ) {
     const confirmed =
       window.confirm(
-        `Delete ${player.name} from your player library? Historical tournament records will remain unchanged.`
-      )
+        `Permanently delete "${player.name}"?
 
+This action is irreversible.
+
+The selected player, account, active sessions, tournament participation, associated matches, ELO data, career history, and related records will be permanently deleted.
+
+This cannot be undone.`
+      )
 
     if (!confirmed) {
       return
     }
 
+    const typedConfirmation =
+      window.prompt(
+        `Type DELETE to permanently remove "${player.name}" and all associated data.`
+      )
+
+    if (
+      typedConfirmation !==
+      'DELETE'
+    ) {
+      return
+    }
+
+    setDeletingPlayerId(
+      player.id
+    )
 
     setError('')
     setSuccess('')
 
+    try {
+      const result =
+        await apiRequest(
+          `/api/player-accounts/admin/global-players/${player.id}`,
+          {
+            method: 'DELETE',
 
-    const {
-      error:
-        deleteError
-    } = await supabase
-      .from('players')
-      .delete()
-      .eq(
-        'id',
-        player.id
-      )
-
-
-    if (deleteError) {
-      setError(
-        deleteError.message
-      )
-
-      return
-    }
-
-
-    if (
-      player.image_path
-    ) {
-      await supabase
-        .storage
-        .from(
-          'player-images'
+            body:
+              JSON.stringify({
+                confirmation:
+                  'DELETE'
+              })
+          }
         )
-        .remove([
-          player.image_path
-        ])
+
+      setPlayers(
+        (currentPlayers) =>
+          currentPlayers.filter(
+            (item) =>
+              item.id !==
+              player.id
+          )
+      )
+
+      setSuccess(
+        result?.message ||
+        `${player.name} was permanently deleted.`
+      )
+
+      await loadPlayers()
+
+    } catch (deleteError) {
+
+      setError(
+        deleteError.message ||
+        'Unable to permanently delete player.'
+      )
+
+    } finally {
+
+      setDeletingPlayerId(
+        null
+      )
+
     }
-
-
-    setSuccess(
-      `${player.name} removed from your player library.`
-    )
-
-
-    await loadPlayers()
   }
-
 
   return (
     <main className="players-page">
@@ -714,16 +743,25 @@ function PlayersPage({
                             </button>
 
                             <button
-                              type="button"
-                              className="delete-global-player"
-                              onClick={() =>
-                                deletePlayer(
-                                  player
-                                )
-                              }
-                            >
-                              Delete
-                            </button>
+                        type="button"
+                        className="delete-global-player"
+                        disabled={
+                          deletingPlayerId ===
+                          player.id
+                        }
+                        onClick={() =>
+                          deletePlayer(
+                            player
+                          )
+                        }
+                      >
+                        {
+                          deletingPlayerId ===
+                          player.id
+                            ? 'Deleting...'
+                            : 'Permanent Delete'
+                        }
+                      </button>
 
                           </div>
                         )
