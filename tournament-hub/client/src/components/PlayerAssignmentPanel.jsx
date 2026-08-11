@@ -632,7 +632,7 @@ function PlayerAssignmentPanel({
     useMemo(
       () =>
         filterPlayers(
-          library,
+          availablePlayers,
           search
         )
           .slice(
@@ -640,7 +640,7 @@ function PlayerAssignmentPanel({
             30
           ),
       [
-        library,
+        availablePlayers,
         search
       ]
     )
@@ -1517,7 +1517,12 @@ function PlayerAssignmentPanel({
             {individualResults.length ===
               0 ? (
               <div className="assignment-no-results">
-                No players match your search.
+                {
+                  availablePlayers.length ===
+                  0
+                    ? 'All global players are already assigned to this tournament.'
+                    : 'No available players match your search.'
+                }
               </div>
             ) : (
               individualResults.map(
