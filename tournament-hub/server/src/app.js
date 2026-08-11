@@ -9,6 +9,7 @@ import tournamentAdminRoutes from './routes/tournamentAdmin.js'
 import matchRoutes from './routes/matches.js'
 import playerAccountsRouter from './routes/playerAccounts.js'
 
+import playerCompetitionRouter from './routes/playerCompetition.js'
 const app = express()
 
 app.use(
@@ -63,6 +64,11 @@ app.use(
 app.use(
   '/api/player-accounts',
   playerAccountsRouter
+)
+
+app.use(
+  '/api/player-accounts',
+  playerCompetitionRouter
 )
 
 app.use(
