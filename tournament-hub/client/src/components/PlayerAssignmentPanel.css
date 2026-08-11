@@ -755,3 +755,268 @@
   background: #fff1ea !important;
   color: #e45712 !important;
 }
+
+
+/* =====================================================
+   MULTI PLAYER SELECTION
+   ===================================================== */
+
+.assignment-selection-toolbar {
+  display: grid;
+  grid-template-columns:
+    auto
+    minmax(120px, 1fr)
+    auto;
+  align-items: center;
+
+  gap: 12px;
+
+  margin:
+    0
+    0
+    14px;
+
+  padding: 12px;
+
+  border: 1px solid #f1c8b7;
+  border-radius: 12px;
+
+  background: #fff8f4;
+}
+
+
+.assignment-selection-buttons {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+
+.assignment-selection-toolbar button {
+  min-height: 34px;
+
+  padding:
+    0
+    12px;
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.assignment-select-all {
+  border: 1px solid #fc631d;
+
+  background: #ffffff;
+  color: #e45712;
+}
+
+
+.assignment-clear-selection {
+  border: 1px solid #f1c8b7;
+
+  background: #ffffff;
+  color: #64748b;
+}
+
+
+.assignment-selection-toolbar button:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+
+.assignment-selection-summary {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  color: #64748b;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+.assignment-selection-summary strong {
+  min-width: 26px;
+  height: 26px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 999px;
+
+  background: #f9dcd1;
+  color: #e45712;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+.assignment-bulk-button {
+  border: 0;
+
+  background: #fc631d;
+  color: #ffffff;
+}
+
+
+.assignment-bulk-button:hover:not(:disabled) {
+  background: #e45712;
+}
+
+
+/*
+ * Responsive multi-column player grid.
+ * Wide screens can display multiple cards per row.
+ */
+.global-player-results {
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(
+        275px,
+        1fr
+      )
+    );
+}
+
+
+.assignment-player-card {
+  position: relative;
+}
+
+
+.assignment-player-card.is-selected {
+  border-color: #fc631d;
+
+  background: #fff7f2;
+
+  box-shadow:
+    0
+    0
+    0
+    2px
+    rgba(252, 99, 29, 0.08);
+}
+
+
+.assignment-player-checkbox {
+  flex:
+    0
+    0
+    auto;
+
+  width: 20px;
+  height: 20px;
+
+  display: grid;
+  place-items: center;
+
+  cursor: pointer;
+}
+
+
+.assignment-player-checkbox input {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+.assignment-player-checkbox > span {
+  width: 18px;
+  height: 18px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1.5px solid #f1c8b7;
+  border-radius: 5px;
+
+  background: #ffffff;
+
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+
+.assignment-player-checkbox input:checked + span {
+  border-color: #fc631d;
+
+  background: #fc631d;
+}
+
+
+.assignment-player-checkbox input:checked + span::after {
+  content: "✓";
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+.assignment-player-checkbox.is-disabled {
+  opacity: 0.35;
+
+  cursor: not-allowed;
+}
+
+
+@media (max-width: 820px) {
+  .assignment-selection-toolbar {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .assignment-selection-summary {
+    justify-content:
+      flex-start;
+  }
+
+
+  .assignment-bulk-button {
+    width: 100%;
+  }
+
+
+  .global-player-results {
+    grid-template-columns:
+      repeat(
+        auto-fill,
+        minmax(
+          240px,
+          1fr
+        )
+      );
+  }
+}
+
+
+@media (max-width: 560px) {
+  .global-player-results {
+    grid-template-columns:
+      1fr;
+  }
+}

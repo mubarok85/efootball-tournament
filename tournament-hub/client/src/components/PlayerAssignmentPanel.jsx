@@ -420,6 +420,13 @@ function PlayerAssignmentPanel({
   ] = useState('')
 
   const [
+    selectedPlayerIds,
+    setSelectedPlayerIds
+  ] = useState(
+    new Set()
+  )
+
+  const [
     error,
     setError
   ] = useState('')
@@ -639,6 +646,75 @@ function PlayerAssignmentPanel({
     )
 
 
+  function togglePlayerSelection(
+    playerId
+  ) {
+    if (
+      locked ||
+      assignedIds.has(
+        playerId
+      )
+    ) {
+      return
+    }
+
+    setSelectedPlayerIds(
+      (current) => {
+        const next =
+          new Set(
+            current
+          )
+
+        if (
+          next.has(
+            playerId
+          )
+        ) {
+          next.delete(
+            playerId
+          )
+        } else {
+          next.add(
+            playerId
+          )
+        }
+
+        return next
+      }
+    )
+  }
+
+
+  function selectAllAvailable() {
+    if (
+      locked ||
+      savingKey
+    ) {
+      return
+    }
+
+    setSelectedPlayerIds(
+      new Set(
+        availablePlayers.map(
+          (player) =>
+            player.id
+        )
+      )
+    )
+  }
+
+
+  function clearPlayerSelection() {
+    if (savingKey) {
+      return
+    }
+
+    setSelectedPlayerIds(
+      new Set()
+    )
+  }
+
+
   function findPlayer(
     id
   ) {
@@ -752,6 +828,127 @@ function PlayerAssignmentPanel({
     } else {
       setSuccess(
         `${player.name} has been assigned to this tournament.`
+      )
+
+      setSelectedPlayerIds(
+        (current) => {
+          const next =
+            new Set(
+              current
+            )
+
+          next.delete(
+            player.id
+          )
+
+          return next
+        }
+      )
+
+      await refreshAll()
+    }
+
+
+    setSavingKey('')
+  }
+
+
+  async function assignSelectedPlayers() {
+    if (locked) {
+      setError(
+        'Participants are locked because fixtures have already been generated.'
+      )
+
+      return
+    }
+
+
+    const playersToAssign =
+      availablePlayers.filter(
+        (player) =>
+          selectedPlayerIds.has(
+            player.id
+          )
+      )
+
+
+    if (
+      playersToAssign.length ===
+      0
+    ) {
+      setError(
+        'Select at least one available player.'
+      )
+
+      return
+    }
+
+
+    setSavingKey(
+      'bulk'
+    )
+
+    setError('')
+    setSuccess('')
+
+
+    const rows =
+      playersToAssign.map(
+        (player) => ({
+          tournament_id:
+            tournamentId,
+
+          master_player_id:
+            player.id,
+
+          name:
+            player.name,
+
+          image_url:
+            player.image_url,
+
+          team_id:
+            null,
+
+          team_position:
+            null
+        })
+      )
+
+
+    const {
+      error:
+        insertError
+    } =
+      await supabase
+        .from(
+          'tournament_players'
+        )
+        .insert(
+          rows
+        )
+
+
+    if (insertError) {
+      if (
+        insertError.code ===
+        '23505'
+      ) {
+        setError(
+          'One or more selected players are already assigned to this tournament.'
+        )
+      } else {
+        setError(
+          insertError.message
+        )
+      }
+    } else {
+      setSuccess(
+        `${playersToAssign.length} players have been assigned successfully.`
+      )
+
+      setSelectedPlayerIds(
+        new Set()
       )
 
       await refreshAll()
@@ -1226,6 +1423,95 @@ function PlayerAssignmentPanel({
           </div>
 
 
+          <div className="assignment-selection-toolbar">
+
+            <div className="assignment-selection-buttons">
+
+              <button
+                type="button"
+                className="assignment-select-all"
+                disabled={
+                  locked ||
+                  Boolean(
+                    savingKey
+                  ) ||
+                  availablePlayers.length ===
+                  0
+                }
+                onClick={
+                  selectAllAvailable
+                }
+              >
+                Select All Available
+              </button>
+
+
+              <button
+                type="button"
+                className="assignment-clear-selection"
+                disabled={
+                  Boolean(
+                    savingKey
+                  ) ||
+                  selectedPlayerIds.size ===
+                  0
+                }
+                onClick={
+                  clearPlayerSelection
+                }
+              >
+                Clear Selection
+              </button>
+
+            </div>
+
+
+            <div className="assignment-selection-summary">
+
+              <strong>
+                {
+                  selectedPlayerIds.size
+                }
+              </strong>
+
+              <span>
+                {
+                  selectedPlayerIds.size ===
+                  1
+                    ? 'Player Selected'
+                    : 'Players Selected'
+                }
+              </span>
+
+            </div>
+
+
+            <button
+              type="button"
+              className="assignment-bulk-button"
+              disabled={
+                locked ||
+                Boolean(
+                  savingKey
+                ) ||
+                selectedPlayerIds.size ===
+                0
+              }
+              onClick={
+                assignSelectedPlayers
+              }
+            >
+              {
+                savingKey ===
+                'bulk'
+                  ? 'Assigning Players...'
+                  : `Assign Selected (${selectedPlayerIds.size})`
+              }
+            </button>
+
+          </div>
+
+
           <div className="global-player-results">
 
             {individualResults.length ===
@@ -1245,6 +1531,11 @@ function PlayerAssignmentPanel({
                     savingKey ===
                     player.id
 
+                  const selected =
+                    selectedPlayerIds.has(
+                      player.id
+                    )
+
 
                   return (
                     <article
@@ -1252,13 +1543,60 @@ function PlayerAssignmentPanel({
                         player.id
                       }
                       className={
-                        `assignment-player-card ${
+                        [
+                          'assignment-player-card',
+
                           assigned
                             ? 'is-assigned'
+                            : '',
+
+                          selected
+                            ? 'is-selected'
                             : ''
-                        }`
+                        ]
+                          .filter(Boolean)
+                          .join(' ')
                       }
                     >
+
+                      <label
+                        className={
+                          `assignment-player-checkbox ${
+                            assigned
+                              ? 'is-disabled'
+                              : ''
+                          }`
+                        }
+                        title={
+                          assigned
+                            ? 'Already assigned'
+                            : 'Select player'
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={
+                            selected
+                          }
+                          disabled={
+                            locked ||
+                            assigned ||
+                            Boolean(
+                              savingKey
+                            )
+                          }
+                          onChange={() =>
+                            togglePlayerSelection(
+                              player.id
+                            )
+                          }
+                        />
+
+                        <span
+                          aria-hidden="true"
+                        />
+                      </label>
+
 
                       <PlayerIdentity
                         player={player}
