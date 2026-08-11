@@ -5,13 +5,14 @@ import {
 } from 'react'
 
 import { supabase } from '../lib/supabase'
+import { apiRequest } from '../lib/api'
 import CreateTournamentWizard from '../components/CreateTournamentWizard'
 import TournamentDetails from './TournamentDetails'
 import PlayerAccountRequests from '../components/PlayerAccountRequests'
 
 import './Dashboard.css'
 
-function Dashboard({ user }) {
+function Dashboard({ user, profile }) {
   const [tournaments, setTournaments] =
     useState([])
 
@@ -29,6 +30,19 @@ function Dashboard({ user }) {
   const [error, setError] =
     useState('')
 
+  const [
+    deletingTournamentId,
+    setDeletingTournamentId
+  ] = useState(null)
+
+  const canDeleteTournament =
+    [
+      'admin',
+      'super_admin'
+    ].includes(
+      profile?.role
+    )
+
   const [stats, setStats] =
     useState({
       activeTournaments: 0,
@@ -42,22 +56,32 @@ function Dashboard({ user }) {
       setError('')
 
       try {
+        let tournamentQuery =
+          supabase
+            .from('tournaments')
+            .select('*')
+
+        if (
+          !canDeleteTournament
+        ) {
+          tournamentQuery =
+            tournamentQuery.eq(
+              'owner_id',
+              user.id
+            )
+        }
+
         const {
           data,
           error: tournamentError
-        } = await supabase
-          .from('tournaments')
-          .select('*')
-          .eq(
-            'owner_id',
-            user.id
-          )
-          .order(
-            'created_at',
-            {
-              ascending: false
-            }
-          )
+        } =
+          await tournamentQuery
+            .order(
+              'created_at',
+              {
+                ascending: false
+              }
+            )
 
         if (tournamentError) {
           throw tournamentError
@@ -179,7 +203,7 @@ function Dashboard({ user }) {
       } finally {
         setLoading(false)
       }
-    }, [user.id])
+    }, [user.id, canDeleteTournament])
 
   useEffect(() => {
     loadDashboard()
@@ -233,6 +257,68 @@ function Dashboard({ user }) {
   async function handleTournamentCreated() {
     setShowWizard(false)
     await loadDashboard()
+  }
+
+
+  async function deleteTournament(
+    tournament
+  ) {
+    if (
+      !canDeleteTournament
+    ) {
+      return
+    }
+
+    const confirmation =
+      window.prompt(
+        `Permanently delete "${tournament.name}"? Type DELETE to confirm.`
+      )
+
+    if (
+      confirmation !== 'DELETE'
+    ) {
+      return
+    }
+
+    setDeletingTournamentId(
+      tournament.id
+    )
+
+    setError('')
+
+    try {
+      await apiRequest(
+        `/api/tournaments/${tournament.id}`,
+        {
+          method: 'DELETE',
+
+          body:
+            JSON.stringify({
+              confirmation: 'DELETE'
+            })
+        }
+      )
+
+      setTournaments(
+        (current) =>
+          current.filter(
+            (item) =>
+              item.id !==
+              tournament.id
+          )
+      )
+
+      await loadDashboard()
+    } catch (deleteError) {
+      setError(
+        deleteError.message ||
+        'Unable to delete tournament.'
+      )
+    } finally {
+      setDeletingTournamentId(
+        null
+      )
+    }
   }
 
   function formatTournamentFormat(
@@ -534,20 +620,72 @@ function Dashboard({ user }) {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className="primary-button"
+                  <div
                     style={{
+                      display: 'flex',
+                      gap: '10px',
+                      flexWrap: 'wrap',
                       marginTop: '18px'
                     }}
-                    onClick={() =>
-                      setSelectedTournamentId(
-                        tournament.id
-                      )
-                    }
                   >
-                    Manage Tournament
-                  </button>
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() =>
+                        setSelectedTournamentId(
+                          tournament.id
+                        )
+                      }
+                    >
+                      Manage Tournament
+                    </button>
+
+                    {canDeleteTournament && (
+                      <button
+                        type="button"
+                        disabled={
+                          deletingTournamentId ===
+                          tournament.id
+                        }
+                        onClick={() =>
+                          deleteTournament(
+                            tournament
+                          )
+                        }
+                        style={{
+                          padding:
+                            '11px 18px',
+                          border:
+                            '1px solid #dc2626',
+                          borderRadius:
+                            '10px',
+                          background:
+                            '#fff',
+                          color:
+                            '#dc2626',
+                          fontWeight:
+                            700,
+                          cursor:
+                            deletingTournamentId ===
+                            tournament.id
+                              ? 'not-allowed'
+                              : 'pointer',
+                          opacity:
+                            deletingTournamentId ===
+                            tournament.id
+                              ? 0.6
+                              : 1
+                        }}
+                      >
+                        {
+                          deletingTournamentId ===
+                          tournament.id
+                            ? 'Deleting...'
+                            : 'Delete Tournament'
+                        }
+                      </button>
+                    )}
+                  </div>
                 </article>
               )
             )}

@@ -163,6 +163,7 @@ function MainApp({
           'tournaments' && (
           <Dashboard
             user={user}
+            profile={profile}
           />
         )}
 
