@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js'
 import {
   Router
 } from 'express'
@@ -1792,6 +1793,36 @@ router.post(
 
 
 
+
+function getPermanentDeleteSupabase() {
+  const url =
+    process.env.SUPABASE_URL
+
+  const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (
+    !url ||
+    !serviceRoleKey
+  ) {
+    throw new Error(
+      'Server Supabase service credentials are unavailable.'
+    )
+  }
+
+  return createClient(
+    url,
+    serviceRoleKey,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    }
+  )
+}
+
+
 /*
  * =====================================================
  * PERMANENT GLOBAL PLAYER DELETION
@@ -1868,15 +1899,8 @@ router.delete(
           })
       }
 
-      const {
-        supabase
-      } = req
-
-      if (!supabase) {
-        throw new Error(
-          'Admin database client is unavailable.'
-        )
-      }
+      const supabase =
+        getPermanentDeleteSupabase()
 
       const {
         data,
