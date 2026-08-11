@@ -244,7 +244,7 @@ function GlobalPlayerProfileModal({
 
               <div className="career-avatar">
                 {profile.image_url ? (
-                  <img
+                  <img className="career-profile-photo-image"
                     src={profile.image_url}
                     alt={profile.player_name}
                   />

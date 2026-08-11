@@ -500,3 +500,140 @@
       repeat(2, 1fr);
   }
 }
+
+
+
+/* =====================================================
+   PREMIUM CAREER PROFILE PHOTO
+   ===================================================== */
+
+.career-profile-photo-image {
+  width: 150px !important;
+  height: 150px !important;
+
+  min-width: 150px;
+
+  aspect-ratio: 1 / 1;
+
+  display: block;
+
+  object-fit: cover;
+  object-position: center 20%;
+
+  border:
+    5px
+    solid
+    #ffffff !important;
+
+  border-radius:
+    22px !important;
+
+  outline:
+    2px
+    solid
+    rgba(
+      252,
+      99,
+      29,
+      0.85
+    );
+
+  outline-offset: 3px;
+
+  background:
+    #f9dcd1;
+
+  box-shadow:
+    0
+    20px
+    40px
+    rgba(
+      17,
+      24,
+      39,
+      0.18
+    ),
+    0
+    8px
+    20px
+    rgba(
+      252,
+      99,
+      29,
+      0.20
+    ),
+    0
+    0
+    0
+    10px
+    rgba(
+      252,
+      99,
+      29,
+      0.07
+    );
+
+  transition:
+    transform
+      0.22s
+      ease,
+    box-shadow
+      0.22s
+      ease;
+}
+
+
+.career-profile-photo-image:hover {
+  transform:
+    translateY(-3px)
+    scale(1.025);
+
+  box-shadow:
+    0
+    24px
+    46px
+    rgba(
+      17,
+      24,
+      39,
+      0.20
+    ),
+    0
+    10px
+    24px
+    rgba(
+      252,
+      99,
+      29,
+      0.25
+    ),
+    0
+    0
+    0
+    11px
+    rgba(
+      252,
+      99,
+      29,
+      0.09
+    );
+}
+
+
+@media (max-width: 760px) {
+
+  .career-profile-photo-image {
+    width:
+      115px !important;
+
+    height:
+      115px !important;
+
+    min-width:
+      115px;
+
+    border-radius:
+      18px !important;
+  }
+
+}
