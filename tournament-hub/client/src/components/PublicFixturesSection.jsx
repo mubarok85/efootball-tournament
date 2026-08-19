@@ -1,8 +1,10 @@
 import {
-  useMemo
+  useMemo,
+  useState
 } from 'react'
 
 import ParticipantAvatar from './ParticipantAvatar'
+import PublicMatchDetailsModal from './PublicMatchDetailsModal'
 
 import './PublicFixturesSection.css'
 
@@ -41,9 +43,15 @@ function PublicFixturesSection({
   groups,
   matches
 }) {
-  const participantType =
+
+const participantType =
     tournament
       .participant_type
+
+  const [
+    selectedMatch,
+    setSelectedMatch
+  ] = useState(null)
 
 
   const playerMap =
@@ -478,6 +486,19 @@ function PublicFixturesSection({
                           </div>
                         )}
 
+                        <button
+                          type="button"
+                          className="public-match-details-button"
+                          onClick={() =>
+                            setSelectedMatch(
+                              match
+                            )
+                          }
+                        >
+                          Match Details
+                        </button>
+
+
                       </article>
                     )
                   )}
@@ -490,6 +511,19 @@ function PublicFixturesSection({
 
         </div>
       )}
+      {selectedMatch && (
+        <PublicMatchDetailsModal
+          match={selectedMatch}
+          tournament={tournament}
+          players={players}
+          teams={teams}
+          groups={groups}
+          onClose={() =>
+            setSelectedMatch(null)
+          }
+        />
+      )}
+
 
     </section>
   )

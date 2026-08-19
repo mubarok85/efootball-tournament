@@ -451,7 +451,9 @@ function Dashboard({ user, profile }) {
         </div>
       </section>
 
-      <PlayerAccountRequests />
+      <div className="dashboard-account-requests">
+        <PlayerAccountRequests />
+      </div>
 
 
       {error && (

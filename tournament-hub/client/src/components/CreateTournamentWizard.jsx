@@ -45,7 +45,8 @@ const initialForm = {
   qualifiers_per_group: 2,
   qualifiers_count: 4,
   double_round_robin: false,
-  two_legged_knockout: false
+  two_legged_knockout: false,
+  enable_bronze_final: false
 }
 
 function CreateTournamentWizard({
@@ -350,6 +351,11 @@ function CreateTournamentWizard({
           two_legged_knockout:
             usesTwoLeggedKnockout()
               ? form.two_legged_knockout
+              : false,
+
+          enable_bronze_final:
+            ['knockout', 'league_knockout', 'multi_group_tournament'].includes(form.format)
+              ? form.enable_bronze_final
               : false,
 
           status:
@@ -745,6 +751,22 @@ function CreateTournamentWizard({
                 onChange={(checked) =>
                   updateField(
                     'two_legged_knockout',
+                    checked
+                  )
+                }
+              />
+            )}
+
+            {['knockout', 'league_knockout', 'multi_group_tournament'].includes(form.format) && (
+              <ToggleCard
+                title="Bronze Final"
+                description="The two losing semi-finalists will automatically play for 3rd place."
+                checked={
+                  form.enable_bronze_final
+                }
+                onChange={(checked) =>
+                  updateField(
+                    'enable_bronze_final',
                     checked
                   )
                 }

@@ -1674,6 +1674,19 @@ function TournamentDetails({
                                   2
                                 )
                               }
+                              motmPlayers={
+                                tournament.participant_type === 'team'
+                                  ? players.filter(
+                                      (player) =>
+                                        player.team_id === match.team1_id ||
+                                        player.team_id === match.team2_id
+                                    )
+                                  : players.filter(
+                                      (player) =>
+                                        player.id === match.player1_id ||
+                                        player.id === match.player2_id
+                                    )
+                              }
                               onSaved={
                                 loadTournament
                               }

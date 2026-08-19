@@ -1,100 +1,18 @@
 import {
-  useCallback,
   useEffect,
   useState
 } from 'react'
 
-import {
-  supabase
-} from './lib/supabase'
+import { supabase } from './lib/supabase'
 
-import PublicApp from './pages/PublicApp'
-import AdminAuth from './pages/AdminAuth'
-import AdminAccessStatus from './pages/AdminAccessStatus'
-import MainApp from './pages/MainApp'
-
-
-function getEntryPoint() {
-  const path =
-    window.location.pathname
-      .replace(
-        /\/+$/,
-        ''
-      )
-    ||
-    '/'
-
-
-  if (
-    path ===
-    '/admin'
-  ) {
-    return 'admin'
-  }
-
-
-  if (
-    path !==
-    '/'
-  ) {
-    window.history
-      .replaceState(
-        {},
-        '',
-        '/'
-      )
-  }
-
-
-  return 'public'
-}
-
-
-function hasRecoveryMarker() {
-  return (
-    window.location.hash
-      .includes(
-        'type=recovery'
-      )
-    ||
-    window.location.search
-      .includes(
-        'type=recovery'
-      )
-  )
-}
-
+import Auth from './pages/Auth'
+import Dashboard from './pages/Dashboard'
+import ResetPassword from './pages/ResetPassword'
 
 function App() {
-  const entryPoint =
-    getEntryPoint()
-
-
-  if (
-    entryPoint ===
-    'admin'
-  ) {
-    return (
-      <AdminPortal />
-    )
-  }
-
-
-  return (
-    <PublicApp />
-  )
-}
-
-
-function AdminPortal() {
   const [
     session,
     setSession
-  ] = useState(null)
-
-  const [
-    profile,
-    setProfile
   ] = useState(null)
 
   const [
@@ -103,356 +21,79 @@ function AdminPortal() {
   ] = useState(true)
 
   const [
-    profileLoading,
-    setProfileLoading
+    passwordRecovery,
+    setPasswordRecovery
   ] = useState(false)
 
-  const [
-    error,
-    setError
-  ] = useState('')
-
-  const [
-    recoveryMode,
-    setRecoveryMode
-  ] = useState(
-    () =>
-      hasRecoveryMarker()
-  )
-
-
-  const loadProfile =
-    useCallback(
-      async (
-        userId
-      ) => {
-        if (!userId) {
-          setProfile(null)
-
-          return
-        }
-
-
-        setProfileLoading(
-          true
+  useEffect(() => {
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        setSession(
+          data.session
         )
 
-        setError('')
+        setLoading(false)
+      })
 
-
-        const {
-          data,
-          error:
-            profileError
-        } =
-          await supabase
-            .from('profiles')
-            .select(`
-              id,
-              full_name,
-              email,
-              role,
-              approval_status,
-              approved_by,
-              approved_at,
-              created_at
-            `)
-            .eq(
-              'id',
-              userId
-            )
-            .maybeSingle()
-
-
-        if (
-          profileError
-        ) {
-          setError(
-            profileError.message
-          )
-
-          setProfile(null)
-        } else {
-          setProfile(
-            data
-          )
-        }
-
-
-        setProfileLoading(
-          false
-        )
-      },
-      []
-    )
-
-
-  useEffect(
-    () => {
-      let mounted =
-        true
-
-
-      supabase
-        .auth
-        .getSession()
-        .then(
-          ({
-            data
-          }) => {
-            if (!mounted) {
-              return
-            }
-
-
-            const nextSession =
-              data.session
-
-
+    const {
+      data: {
+        subscription
+      }
+    } =
+      supabase.auth
+        .onAuthStateChange(
+          (
+            event,
+            newSession
+          ) => {
             setSession(
-              nextSession
+              newSession
             )
-
 
             if (
-              nextSession
-                ?.user
-                ?.id
+              event ===
+              'PASSWORD_RECOVERY'
             ) {
-              loadProfile(
-                nextSession
-                  .user
-                  .id
+              setPasswordRecovery(
+                true
               )
             }
-
-
-            setLoading(false)
           }
         )
 
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
-      const {
-        data: {
-          subscription
-        }
-      } =
-        supabase
-          .auth
-          .onAuthStateChange(
-            (
-              event,
-              nextSession
-            ) => {
-              setSession(
-                nextSession
-              )
-
-
-              if (
-                event ===
-                'PASSWORD_RECOVERY'
-              ) {
-                setRecoveryMode(
-                  true
-                )
-
-                return
-              }
-
-
-              if (
-                event ===
-                'SIGNED_OUT'
-              ) {
-                setProfile(null)
-
-                return
-              }
-
-
-              if (
-                nextSession
-                  ?.user
-                  ?.id
-              ) {
-                window.setTimeout(
-                  () => {
-                    loadProfile(
-                      nextSession
-                        .user
-                        .id
-                    )
-                  },
-                  0
-                )
-              }
-            }
-          )
-
-
-      return () => {
-        mounted = false
-
-        subscription
-          .unsubscribe()
-      }
-    },
-    [loadProfile]
-  )
-
-
-  /*
-   * Recovery is checked before the
-   * normal admin authorization gate.
-   *
-   * Supabase temporarily authenticates
-   * the user when they follow the
-   * recovery link.
-   */
-  if (
-    recoveryMode
-  ) {
-    return (
-      <AdminAuth
-        recoveryMode
-        onRecoveryComplete={() => {
-          setRecoveryMode(
-            false
-          )
-
-          setSession(null)
-          setProfile(null)
-
-          window.history
-            .replaceState(
-              {},
-              '',
-              '/admin'
-            )
-        }}
-      />
-    )
-  }
-
-
-  if (
-    loading ||
-    profileLoading
-  ) {
+  if (loading) {
     return (
       <div className="loading-screen">
-        Loading Admin Portal...
+        Loading...
       </div>
     )
   }
 
+  if (passwordRecovery) {
+    return (
+      <ResetPassword
+        onComplete={() =>
+          setPasswordRecovery(false)
+        }
+      />
+    )
+  }
 
   if (!session) {
-    return (
-      <AdminAuth />
-    )
+    return <Auth />
   }
-
-
-  if (
-    error ||
-    !profile
-  ) {
-    return (
-      <main className="admin-status-page">
-
-        <section className="admin-status-card">
-
-          <h1>
-            Unable to Load Admin Profile
-          </h1>
-
-          <p>
-            {
-              error
-              ||
-              'Administrator profile was not found.'
-            }
-          </p>
-
-
-          <button
-            type="button"
-            className="admin-status-refresh"
-            onClick={() =>
-              loadProfile(
-                session.user.id
-              )
-            }
-          >
-            Retry
-          </button>
-
-        </section>
-
-      </main>
-    )
-  }
-
-
-  if (
-    profile
-      .approval_status !==
-    'approved'
-  ) {
-    return (
-      <AdminAccessStatus
-        profile={
-          profile
-        }
-        onRefresh={() =>
-          loadProfile(
-            session.user.id
-          )
-        }
-      />
-    )
-  }
-
-
-  if (
-    ![
-      'admin',
-      'super_admin'
-    ].includes(
-      profile.role
-    )
-  ) {
-    return (
-      <AdminAccessStatus
-        profile={{
-          ...profile,
-
-          approval_status:
-            'revoked'
-        }}
-        onRefresh={() =>
-          loadProfile(
-            session.user.id
-          )
-        }
-      />
-    )
-  }
-
 
   return (
-    <MainApp
-      user={
-        session.user
-      }
-      profile={
-        profile
-      }
+    <Dashboard
+      user={session.user}
     />
   )
 }
-
 
 export default App

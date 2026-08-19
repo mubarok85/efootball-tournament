@@ -1440,3 +1440,897 @@ span:nth-child(4n) {
     display: none;
   }
 }
+
+/* =====================================================
+   PESLOVER RESPONSIVE AUTO-FIT BRACKET
+   No horizontal bracket scrolling.
+   ===================================================== */
+
+.premium-bracket-section {
+  width: 100%;
+  max-width: 100%;
+
+  overflow: hidden;
+}
+
+
+.premium-bracket-viewport {
+  width: 100%;
+  max-width: 100%;
+
+  overflow: hidden;
+
+  padding:
+    8px
+    0
+    14px;
+}
+
+
+/*
+ * The complete bracket always fits inside
+ * the available container width.
+ */
+.premium-two-sided-bracket {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    clamp(150px, 17vw, 225px)
+    minmax(0, 1fr);
+
+  gap:
+    clamp(
+      5px,
+      1vw,
+      15px
+    );
+
+  align-items: stretch;
+
+  min-height:
+    clamp(
+      500px,
+      55vw,
+      760px
+    );
+}
+
+
+/* =====================================================
+   BRACKET WINGS.
+   ===================================================== */
+
+.premium-bracket-wing {
+  min-width: 0;
+
+  display: flex;
+
+  gap:
+    clamp(
+      3px,
+      0.65vw,
+      10px
+    );
+}
+
+
+.premium-left-wing {
+  justify-content: flex-end;
+}
+
+
+.premium-right-wing {
+  justify-content: flex-start;
+}
+
+
+.premium-round-column {
+  min-width: 0;
+
+  flex:
+    1
+    1
+    0;
+}
+
+
+.premium-round-title {
+  min-height: 26px;
+
+  margin-bottom: 7px;
+
+  font-size:
+    clamp(
+      6px,
+      0.65vw,
+      9px
+    );
+
+  line-height: 1.15;
+}
+
+
+/* =====================================================
+   MATCH CARDS.
+   ===================================================== */
+
+.premium-bracket-tie {
+  width: 100%;
+  min-width: 0;
+}
+
+
+.premium-bracket-slot {
+  min-width: 0;
+
+  min-height:
+    clamp(
+      31px,
+      3vw,
+      40px
+    );
+
+  grid-template-columns:
+    8px
+    clamp(19px, 1.8vw, 27px)
+    minmax(0, 1fr)
+    clamp(18px, 1.8vw, 26px);
+
+  gap:
+    clamp(
+      2px,
+      0.4vw,
+      6px
+    );
+
+  padding:
+    clamp(
+      3px,
+      0.45vw,
+      6px
+    );
+}
+
+
+.premium-slot-player {
+  min-width: 0;
+
+  overflow: hidden;
+
+  font-size:
+    clamp(
+      7px,
+      0.68vw,
+      10px
+    );
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.premium-match-meta {
+  min-height: 18px;
+
+  padding:
+    4px
+    5px
+    2px;
+
+  font-size:
+    clamp(
+      5px,
+      0.48vw,
+      7px
+    );
+}
+
+
+/* =====================================================
+   CENTER CHAMPIONSHIP AREA.
+   ===================================================== */
+
+.premium-bracket-center {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap:
+    clamp(
+      11px,
+      1.5vw,
+      20px
+    );
+}
+
+
+.central-trophy-area {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.world-cup-trophy-wrap {
+  width:
+    clamp(
+      120px,
+      13vw,
+      180px
+    );
+
+  max-width: 100%;
+}
+
+
+.world-cup-glow {
+  width:
+    clamp(
+      85px,
+      9vw,
+      125px
+    );
+
+  height:
+    clamp(
+      85px,
+      9vw,
+      125px
+    );
+}
+
+
+/* =====================================================
+   CHAMPION GOLD PLATE.
+   ===================================================== */
+
+.trophy-name-slot {
+  width:
+    min(
+      94%,
+      205px
+    );
+
+  min-height: 42px;
+
+  margin-top: -13px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    6px
+    9px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    rgba(255, 226, 126, 0.60);
+
+  border-radius: 7px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f7d76b,
+      #bd8118 58%,
+      #76500d
+    );
+
+  box-shadow:
+    inset
+    0
+    1px
+    0
+    rgba(255, 255, 255, 0.40),
+
+    0
+    7px
+    16px
+    rgba(0, 0, 0, 0.32);
+
+  text-align: center;
+}
+
+
+.trophy-name-slot.empty {
+  min-height: 38px;
+}
+
+
+.trophy-name-slot span {
+  margin-bottom: 2px;
+
+  color: #503202;
+
+  font-size: 6px;
+  font-weight: 900;
+
+  letter-spacing: 0.15em;
+}
+
+
+.trophy-name-slot strong {
+  width: 100%;
+
+  overflow: hidden;
+
+  color: #201300;
+
+  font-size:
+    clamp(
+      9px,
+      0.85vw,
+      13px
+    );
+
+  font-weight: 900;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* Champion avatar remains unnecessary
+   inside the compact center column. */
+
+.central-champion-avatar {
+  display: none;
+}
+
+
+/* =====================================================
+   FINAL + BRONZE.
+   ===================================================== */
+
+.premium-center-match,
+.final-match {
+  width: 100%;
+
+  max-width: 205px;
+}
+
+
+.bronze-match {
+  width: 100%;
+
+  max-width: 195px;
+
+  margin-top: 4px;
+}
+
+
+.premium-center-label {
+  margin:
+    0
+    auto
+    6px;
+
+  padding:
+    4px
+    7px;
+
+  font-size:
+    clamp(
+      6px,
+      0.6vw,
+      8px
+    );
+}
+
+
+.premium-center-label.bronze {
+  background:
+    linear-gradient(
+      135deg,
+      #cf8750,
+      #8e451c
+    );
+
+  color: white;
+}
+
+
+/* =====================================================
+   TABLET.
+   ===================================================== */
+
+@media (
+  max-width: 1000px
+) {
+  .premium-two-sided-bracket {
+    grid-template-columns:
+      minmax(0, 1fr)
+      135px
+      minmax(0, 1fr);
+
+    gap: 5px;
+
+    min-height: 540px;
+  }
+
+
+  .premium-bracket-wing {
+    gap: 3px;
+  }
+
+
+  .world-cup-trophy-wrap {
+    width: 115px;
+  }
+
+
+  .trophy-name-slot {
+    width: 125px;
+
+    min-height: 35px;
+
+    padding:
+      4px
+      6px;
+  }
+
+
+  .premium-center-match,
+  .final-match {
+    max-width: 125px;
+  }
+
+
+  .bronze-match {
+    max-width: 118px;
+  }
+}
+
+
+/* =====================================================
+   MOBILE AUTO-FIT.
+   No horizontal conversion / no scrollbar.
+   ===================================================== */
+
+@media (
+  max-width: 760px
+) {
+  .premium-bracket-section {
+    padding:
+      14px
+      8px;
+  }
+
+
+  .premium-bracket-header {
+    gap: 10px;
+
+    margin-bottom: 14px;
+  }
+
+
+  .premium-two-sided-bracket {
+    width: 100%;
+    min-width: 0;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      86px
+      minmax(0, 1fr);
+
+    gap: 2px;
+
+    min-height: 430px;
+  }
+
+
+  .premium-bracket-wing {
+    gap: 2px;
+  }
+
+
+  .premium-round-column {
+    min-width: 0;
+  }
+
+
+  .premium-round-title {
+    min-height: 20px;
+
+    margin-bottom: 3px;
+
+    font-size: 5px;
+
+    letter-spacing: 0.02em;
+  }
+
+
+  .premium-round-ties {
+    gap: 4px;
+  }
+
+
+  /*
+   * On small screens we remove non-essential
+   * visual elements instead of introducing scroll.
+   */
+  .premium-bracket-slot {
+    min-height: 25px;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      15px;
+
+    gap: 2px;
+
+    padding: 2px;
+  }
+
+
+  .premium-bracket-slot
+  .participant-avatar-root,
+  .premium-avatar-placeholder,
+  .premium-drag-handle {
+    display: none;
+  }
+
+
+  .premium-slot-player {
+    padding-left: 2px;
+
+    font-size: 5.5px;
+  }
+
+
+  .premium-slot-score {
+    font-size: 7px;
+  }
+
+
+  .premium-match-meta {
+    min-height: 13px;
+
+    padding:
+      2px
+      3px;
+
+    font-size: 4.5px;
+  }
+
+
+  .premium-bracket-center {
+    gap: 7px;
+  }
+
+
+  .world-cup-trophy-wrap {
+    width: 72px;
+  }
+
+
+  .world-cup-glow {
+    width: 62px;
+    height: 62px;
+
+    top: 16px;
+
+    filter:
+      blur(17px);
+  }
+
+
+  .trophy-name-slot {
+    width: 82px;
+
+    min-height: 27px;
+
+    margin-top: -8px;
+
+    padding:
+      3px
+      4px;
+  }
+
+
+  .trophy-name-slot.empty {
+    min-height: 25px;
+  }
+
+
+  .trophy-name-slot span {
+    font-size: 4px;
+  }
+
+
+  .trophy-name-slot strong {
+    font-size: 6px;
+  }
+
+
+  .premium-center-match,
+  .final-match {
+    max-width: 82px;
+  }
+
+
+  .bronze-match {
+    max-width: 78px;
+
+    margin-top: 0;
+  }
+
+
+  .premium-center-label {
+    margin-bottom: 3px;
+
+    padding:
+      2px
+      4px;
+
+    font-size: 5px;
+  }
+
+
+  .premium-center-tbd {
+    padding: 6px;
+
+    font-size: 5px;
+  }
+}
+/* =====================================================
+   PESLOVER GLOWING BRACKET CONNECTORS
+   ===================================================== */
+
+/*
+ * Existing knockout connection lines.
+ */
+.premium-left-wing
+.premium-bracket-tie::after,
+.premium-right-wing
+.premium-bracket-tie::before {
+  height: 2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(252, 99, 29, 0.30),
+      #fc631d,
+      #ffc45d
+    );
+
+  box-shadow:
+    0 0 4px
+    rgba(252, 99, 29, 0.95),
+
+    0 0 9px
+    rgba(252, 99, 29, 0.65),
+
+    0 0 16px
+    rgba(255, 190, 80, 0.28);
+
+  animation:
+    pesloverConnectorPulse
+    2.1s
+    ease-in-out
+    infinite;
+}
+
+
+/*
+ * Reverse gradient on right side.
+ */
+.premium-right-wing
+.premium-bracket-tie::before {
+  background:
+    linear-gradient(
+      270deg,
+      rgba(252, 99, 29, 0.30),
+      #fc631d,
+      #ffc45d
+    );
+}
+
+
+/* =====================================================
+   SEMI FINAL → FINAL
+   ===================================================== */
+
+.final-match {
+  position: relative;
+}
+
+
+.final-match::before,
+.final-match::after {
+  content: '';
+
+  position: absolute;
+
+  top: 54%;
+
+  width:
+    clamp(
+      10px,
+      1.3vw,
+      22px
+    );
+
+  height: 2px;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      #fc631d,
+      #ffd36a
+    );
+
+  box-shadow:
+    0 0 5px
+    rgba(252, 99, 29, 0.95),
+
+    0 0 11px
+    rgba(252, 99, 29, 0.60),
+
+    0 0 18px
+    rgba(255, 211, 106, 0.26);
+
+  animation:
+    pesloverConnectorPulse
+    2.1s
+    ease-in-out
+    infinite;
+}
+
+
+.final-match::before {
+  right: 100%;
+}
+
+
+.final-match::after {
+  left: 100%;
+
+  transform:
+    scaleX(-1);
+}
+
+
+/* =====================================================
+   FINAL → BRONZE FINAL
+   ===================================================== */
+
+.bronze-match {
+  position: relative;
+}
+
+
+.bronze-match::before {
+  content: '';
+
+  position: absolute;
+
+  left: 50%;
+  top: -18px;
+
+  width: 2px;
+  height: 14px;
+
+  transform:
+    translateX(-50%);
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffd36a,
+      #c87532
+    );
+
+  box-shadow:
+    0 0 5px
+    rgba(252, 99, 29, 0.80),
+
+    0 0 12px
+    rgba(255, 184, 76, 0.42);
+
+  animation:
+    pesloverConnectorPulse
+    2.1s
+    ease-in-out
+    infinite;
+}
+
+
+/* =====================================================
+   GLOW ANIMATION
+   ===================================================== */
+
+@keyframes pesloverConnectorPulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    filter: brightness(0.92);
+  }
+
+  50% {
+    opacity: 1;
+    filter: brightness(1.45);
+  }
+}
+
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .premium-left-wing
+  .premium-bracket-tie::after,
+
+  .premium-right-wing
+  .premium-bracket-tie::before,
+
+  .final-match::before,
+  .final-match::after,
+
+  .bronze-match::before {
+    animation: none;
+  }
+}
+
+/* PESLOVER DATA-DRIVEN SVG ROUTES */
+.premium-two-sided-bracket {
+  position: relative;
+}
+.premium-bracket-connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 1;
+}
+.premium-bracket-wing,
+.premium-bracket-center {
+  position: relative;
+  z-index: 2;
+}
+.premium-left-wing .premium-bracket-tie::after,
+.premium-right-wing .premium-bracket-tie::before,
+.final-match::before,
+.final-match::after,
+.bronze-match::before {
+  content: none !important;
+  display: none !important;
+}
+.premium-bracket-connectors path {
+  fill: none;
+  stroke: #ff8a3d;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(252,99,29,.9)) drop-shadow(0 0 8px rgba(255,138,61,.55));
+  animation: pesloverRealRouteGlow 1.8s ease-in-out infinite;
+}
+@keyframes pesloverRealRouteGlow {
+  0%, 100% { opacity: .72; }
+  50% { opacity: 1; }
+}
+@media (max-width: 760px) {
+  .premium-bracket-connectors path {
+    stroke-width: 1.6;
+  }
+}

@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
 
@@ -23,6 +24,7 @@ import {
 
 import ParticipantAvatar from './ParticipantAvatar'
 import CareerPlayerTrigger from './CareerPlayerTrigger'
+import BracketConnectionLayer from './BracketConnectionLayer'
 
 import './BracketSection.css'
 
@@ -770,7 +772,7 @@ function BracketSection({
         <div className="premium-bracket-empty">
 
           <WorldCupTrophy
-            championName="Awaiting Champion"
+            championName=""
           />
 
           <strong>
@@ -877,6 +879,7 @@ function BracketSection({
                 activeStages.length
             }}
           >
+            <BracketConnectionLayer matches={bracketMatches} />
 
 
             <div className="premium-bracket-wing premium-left-wing">
@@ -937,7 +940,7 @@ function BracketSection({
                       ? participantName(
                           championId
                         )
-                      : 'Awaiting Champion'
+                      : ''
                   }
                 />
 
@@ -965,7 +968,7 @@ function BracketSection({
               </div>
 
 
-              <div className="premium-center-match">
+              <div className="premium-center-match final-match">
 
                 <span className="premium-center-label final">
                   Final
@@ -1010,7 +1013,7 @@ function BracketSection({
 
 
               {bronzeTie && (
-                <div className="premium-center-match">
+                <div className="premium-center-match bronze-match">
 
                   <span className="premium-center-label bronze">
                     Bronze Final
@@ -1302,6 +1305,10 @@ function BracketTie({
           ? 'center'
           : ''
       ].join(' ')}
+      data-bracket-tie-id={canonical?.tie_id || canonical?.id || ''}
+      data-next-tie-id={canonical?.next_tie_id || ''}
+      data-stage={canonical?.stage || ''}
+      data-bracket-side={canonical?.bracket_side || ''}
     >
 
       <div className="premium-match-meta">
@@ -1786,16 +1793,24 @@ function WorldCupTrophy({
       </svg>
 
 
-      <div className="trophy-name-slot">
+      <div
+        className={
+          championName
+            ? 'trophy-name-slot has-champion'
+            : 'trophy-name-slot empty'
+        }
+      >
+        {championName && (
+          <>
+            <span>
+              Champion
+            </span>
 
-        <span>
-          Champion
-        </span>
-
-        <strong>
-          {championName}
-        </strong>
-
+            <strong>
+              {championName}
+            </strong>
+          </>
+        )}
       </div>
 
     </div>

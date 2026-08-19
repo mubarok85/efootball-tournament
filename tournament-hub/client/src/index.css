@@ -547,3 +547,46 @@ select {
 button {
   font-weight: 700;
 }
+
+.password-rules {
+  display: grid;
+  gap: 6px;
+  margin:
+    -6px 0 18px;
+}
+
+.password-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color:
+    var(--text-secondary);
+
+  font-size: 12px;
+}
+
+.password-rule.valid {
+  color: var(--primary);
+}
+
+.auth-link-button {
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 8px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--primary);
+
+  font-weight: 600;
+}
+
+.auth-link-button:hover {
+  color:
+    var(--primary-hover);
+}

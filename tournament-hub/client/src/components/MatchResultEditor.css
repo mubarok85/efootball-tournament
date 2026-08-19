@@ -222,3 +222,188 @@
 
   text-align: center;
 }
+
+
+/* =====================================================
+   MOTM COMPACT PLAYER CARDS FIX
+   ===================================================== */
+
+.motm-player-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(190px, 240px)
+    );
+
+  gap: 12px;
+
+  margin-top: 14px;
+}
+
+
+.motm-player-option {
+  width: 100%;
+  min-width: 0;
+  min-height: 84px;
+
+  display: grid;
+  grid-template-columns:
+    64px
+    minmax(0, 1fr)
+    22px;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #f1c8b7;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+
+.motm-player-grid
+.motm-player-option
+> img {
+  width: 64px !important;
+  height: 64px !important;
+
+  min-width: 64px !important;
+  min-height: 64px !important;
+
+  max-width: 64px !important;
+  max-height: 64px !important;
+
+  display: block !important;
+
+  margin: 0 !important;
+
+  object-fit: cover !important;
+  object-position: center !important;
+
+  border-radius: 12px !important;
+}
+
+
+.motm-player-fallback {
+  width: 64px;
+  height: 64px;
+
+  min-width: 64px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fc631d,
+      #ff8a3d
+    );
+
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+
+.motm-player-copy {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 4px;
+}
+
+
+.motm-player-copy strong {
+  overflow: hidden;
+
+  color: #111827;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.motm-player-copy small {
+  color: #64748b;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.motm-player-option.selected {
+  border-color: #fc631d;
+
+  background: #fff5ef;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(252, 99, 29, 0.10);
+}
+
+
+.motm-check {
+  display: grid;
+  place-items: center;
+
+  color: #fc631d;
+
+  font-size: 16px;
+  font-weight: 900;
+}
+
+
+@media (max-width: 640px) {
+
+  .motm-player-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .motm-player-option {
+    grid-template-columns:
+      56px
+      minmax(0, 1fr)
+      20px;
+
+    min-height: 76px;
+  }
+
+
+  .motm-player-grid
+  .motm-player-option
+  > img,
+  .motm-player-fallback {
+    width: 56px !important;
+    height: 56px !important;
+
+    min-width: 56px !important;
+    min-height: 56px !important;
+
+    max-width: 56px !important;
+    max-height: 56px !important;
+  }
+
+}

@@ -276,3 +276,39 @@
     width: 100%;
   }
 }
+
+
+/* =====================================================
+   TOURNAMENT-FIRST ADMIN LAYOUT
+   ===================================================== */
+
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-header {
+  order: 10;
+}
+
+.welcome-card {
+  order: 20;
+}
+
+.tournament-section {
+  order: 30;
+}
+
+.stats-grid {
+  order: 40;
+  margin-top: 28px;
+}
+
+.dashboard-account-requests {
+  order: 50;
+  margin-top: 24px;
+}
+
+.dashboard-error {
+  order: 15;
+}
